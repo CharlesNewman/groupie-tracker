@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -10,11 +11,17 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", homeHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", homeHandler)
 
-	fmt.Println("Server running at http://localhost:8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	err := http.ListenAndServe(":8080", nil)
+	fmt.Println("Server running at http://localhost:" + port)
+
+	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		fmt.Println("Server error:", err)
 	}

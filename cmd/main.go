@@ -7,8 +7,12 @@ import (
 	"os"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Groupie Tracker is running")
+func homeHandler(artists []internal.Artist) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		for _, artist := range artists {
+			fmt.Fprintln(w, artist.Name)
+		}
+	}
 }
 
 func main() {
@@ -27,7 +31,7 @@ func main() {
 	fmt.Println("First artist:", artists[0].Name)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", homeHandler)
+	mux.HandleFunc("/", homeHandler(artists))
 
 	port := os.Getenv("PORT")
 	if port == "" {

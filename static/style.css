@@ -10,10 +10,97 @@ body {
 }
 
 header {
-    background: #111;
-    color: white;
+    background-color: #e4e2e8;
+    display: flex;
+    align-items: center;
     padding: 20px;
-    text-align: center;
+    gap: 20px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+body.dark-mode .artist-card {
+    background-color: #1f1f1f;
+    color: white;
+}
+
+body.dark-mode .artist-card {
+    background-color: #1f1f1f;
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.08);
+}
+
+.navigation-buttons {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.header-search {
+    display: flex;
+    gap: 8px;
+}
+
+.header-search input {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.header-search button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.navigation-buttons nav {
+    display: flex;
+    gap: 25px;
+}
+
+.navigation-buttons a {
+    color: black;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: 0.2s;
+    font-weight: bold;
+}
+
+body.dark-mode .navigation-buttons a {
+    color: white;
+}
+
+.navigation-buttons a:hover {
+    background-color: #ddd6d6;
+}
+
+#darkModeButton {
+    background-color: white;
+    color: black;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+body.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
+body.dark-mode #darkModeButton {
+    background-color: black;
+    color: white;
+}
+
+body.dark-mode header {
+    background-color: #242424;
 }
 
 main {
@@ -21,6 +108,7 @@ main {
     max-width: 1200px;
     margin: 30px auto;
 }
+
 
 .artist-grid {
     display: grid;

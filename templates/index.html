@@ -13,6 +13,26 @@
 <body>
     <header>
         <h1>Groupie Tracker</h1>
+
+        <div class="navigation-buttons">
+            <nav>
+                <a href="/">Home</a>
+                <a href="/artists">Artists</a>
+                <a href="/locations">Locations</a>
+                <a href="/concerts">Concerts</a>
+                <a href="/about">About</a>
+            </nav>
+        </div>
+
+        <form class="header-search" action="/search" method="GET">
+            <input type="text" name="query" placeholder="Search artists...">
+
+            <button type="submit">Search</button>
+        </form>
+
+        <button id="darkModeButton" type="button" aria-label="Toggle dark mode">
+            ⏾
+        </button>
     </header>
 
     <main>
@@ -20,13 +40,23 @@
             {{range .}}
             <section class="artist-card">
                 <h2>{{.Name}}</h2>
+
                 <img src="{{.Image}}" alt="{{.Name}}">
+
                 <p>Created: {{.CreationDate}}</p>
                 <p>First album: {{.FirstAlbum}}</p>
             </section>
             {{end}}
         </div>
     </main>
+
+    <script>
+        const darkModeButton = document.getElementById("darkModeButton");
+
+        darkModeButton.addEventListener("click", function () {
+            document.body.classList.toggle("dark-mode");
+        });
+    </script>
 </body>
 
 </html>

@@ -46,8 +46,7 @@ func ArtistDetailsHandler(artists []internal.Artist) http.HandlerFunc {
 				return
 			}
 		}
-		http.Error(w, "Missmatch Artist ID", http.StatusNotFound)
-		return
+		http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
 	}
 }
 

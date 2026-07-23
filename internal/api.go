@@ -11,6 +11,9 @@ func FetchArtists() ([]Artist, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Close the API response body when FetchArtists finishes
+	//defer means: Run this line later, when the current function ends
 	defer apidata.Body.Close()
 
 	var artists []Artist

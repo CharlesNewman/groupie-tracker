@@ -65,6 +65,7 @@ func main() {
 	//this is how i send data to the html
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Handler(artists))
+	mux.HandleFunc("/artist", ArtistDetailsHandler(artists))
 
 	// the StripPrefix is used to prevent the html to repeat a path
 	// and ending up somewere it doesnt exists

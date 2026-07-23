@@ -218,3 +218,20 @@ main {
 body.panel-open main {
     margin-right: 380px;
 }
+
+.close-panel {
+    display: block;
+    margin-left: auto;
+
+    background: none;
+    border: none;
+
+    font-size: 28px;
+    cursor: pointer;
+    color: black;
+
+}
+
+body.dark-mode .close-panel {
+    color: white;
+}

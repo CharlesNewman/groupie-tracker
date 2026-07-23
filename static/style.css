@@ -54,6 +54,22 @@ body.dark-mode .artist-card {
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    font-weight: bold;
+}
+
+body.dark-mode .header-search input {
+    background-color: black;
+    color: white;
+    border-color: #555;
+}
+
+body.dark-mode .header-search input::placeholder {
+    color: #bdbdbd;
+}
+
+body.dark-mode .header-search button {
+    background-color: black;
+    color: white;
 }
 
 .navigation-buttons nav {

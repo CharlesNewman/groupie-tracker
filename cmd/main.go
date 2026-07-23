@@ -34,9 +34,12 @@ func main() {
 		return
 	}
 
+	//this is how i send data to the html
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Handler(artists))
 
+	// the StripPrefix is used to prevent the html to repeat a path
+	// and ending up somewere it doesnt exists
 	fileServer := http.FileServer(http.Dir("static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
@@ -44,11 +47,11 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-
 	fmt.Println("Server running at http://localhost:" + port)
 
 	err = http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		fmt.Println("Server error:", err)
+
 	}
 }

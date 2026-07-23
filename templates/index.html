@@ -38,25 +38,47 @@
     <main>
         <div class="artist-grid">
             {{range .}}
-            <section class="artist-card">
+            <section class="artist-card" onclick="openArtistPanel()">
                 <h2>{{.Name}}</h2>
 
                 <img src="{{.Image}}" alt="{{.Name}}">
 
                 <p>Created: {{.CreationDate}}</p>
                 <p>First album: {{.FirstAlbum}}</p>
+                <button class="view-details-button" data-artist-id="{{.ID}}" type="button">View Details</button>
             </section>
             {{end}}
         </div>
     </main>
 
-    <script>
-        const darkModeButton = document.getElementById("darkModeButton");
+    <aside class="artist-panel">
+        <button class="close-panel" type="button">×</button>
 
-        darkModeButton.addEventListener("click", function () {
-            document.body.classList.toggle("dark-mode");
-        });
-    </script>
+        <div class="panel-header">
+            <img src="" alt="Artist image" class="panel-image">
+
+            <div>
+                <h2 class="panel-name">Artist Name</h2>
+                <p class="panel-info">Artist information</p>
+            </div>
+        </div>
+
+        <section class="panel-members">
+            <h3>Members</h3>
+        </section>
+
+        <section class="panel-locations">
+            <h3>Locations</h3>
+        </section>
+
+        <section class="panel-concerts">
+            <h3>Concert Dates</h3>
+        </section>
+    </aside>
+
+    <script src="/static/darkmode.js"></script>
+    <script src="/static/sidepanel.js"></script>
+
 </body>
 
 </html>

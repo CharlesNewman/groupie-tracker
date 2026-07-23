@@ -162,3 +162,59 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+.artist-panel {
+    display: none;
+}
+
+.artist-panel.open {
+    display: block;
+}
+
+.view-details-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+body.dark-mode .view-details-button {
+    background-color: black;
+    color: white;
+}
+
+.artist-panel {
+    position: fixed;
+    top: 100px;
+    right: -380px;
+    width: 380px;
+    height: calc(100vh - 120px);
+
+    background-color: white;
+    padding: 20px;
+
+    border-radius: 16px 0 0 16px;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+
+    overflow-y: auto;
+    z-index: 1000;
+    transition: right 0.3s ease;
+}
+
+body.dark-mode .artist-panel {
+    background-color: black;
+    box-shadow: -4px 0 12px rgba(255, 255, 255, 0.2);
+}
+
+.artist-panel.open {
+    right: 0;
+}
+
+main {
+    transition: margin-right 0.3s ease;
+}
+
+body.panel-open main {
+    margin-right: 380px;
+}

@@ -3,14 +3,21 @@ package main
 import (
 	"fmt"
 	"groupie-tracker/internal"
+	"html/template"
 	"net/http"
 	"os"
 )
 
-func homeHandler(artists []internal.Artist) http.HandlerFunc {
+func Handler(artists []internal.Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		for _, artist := range artists {
-			fmt.Fprintln(w, artist.Name)
+		tmpl, err := template.ParseFiles("templates/index.html")
+		if err != nil {
+			http.Error(w, "Template Error", http.StatusInternalServerError)
+			return
+		}
+		err = tmpl.Execute(w, artists)
+		if err != nil {
+			http.Error(w, "Could not displace page", http.StatusInternalServerError)
 		}
 	}
 }
@@ -27,11 +34,11 @@ func main() {
 		return
 	}
 
-	fmt.Println("Number of artists:", len(artists))
-	fmt.Println("First artist:", artists[0].Name)
-
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", homeHandler(artists))
+	mux.HandleFunc("/", Handler(artists))
+
+	fileServer := http.FileServer(http.Dir("static"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
 	port := os.Getenv("PORT")
 	if port == "" {

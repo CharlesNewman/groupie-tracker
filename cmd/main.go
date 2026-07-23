@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"groupie-tracker/internal"
 	"html/template"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func Handler(artists []internal.Artist) http.HandlerFunc {
@@ -19,6 +21,33 @@ func Handler(artists []internal.Artist) http.HandlerFunc {
 		if err != nil {
 			http.Error(w, "Could not displace page", http.StatusInternalServerError)
 		}
+	}
+}
+
+func ArtistDetailsHandler(artists []internal.Artist) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idText := r.URL.Query().Get("id")
+		idInt, err := strconv.Atoi(idText)
+		if err != nil {
+			http.Error(w, "Could not find artist ID", http.StatusBadRequest)
+			return
+		}
+		for i := 0; i < len(artists); i++ {
+			artist := artists[i]
+			if artist.ID == idInt {
+				w.Header().Set("Content-Type", "application/json")
+
+				err = json.NewEncoder(w).Encode(artist)
+				if err != nil {
+					http.Error(w, "Could not encode artist", http.StatusInternalServerError)
+					return
+				}
+
+				return
+			}
+		}
+		http.Error(w, "Missmatch Artist ID", http.StatusNotFound)
+		return
 	}
 }
 

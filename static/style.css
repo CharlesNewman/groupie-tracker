@@ -203,7 +203,7 @@ body.dark-mode .view-details-button {
 }
 
 body.dark-mode .artist-panel {
-    background-color: black;
+    background-color: rgb(0, 0, 0);
     box-shadow: -4px 0 12px rgba(255, 255, 255, 0.2);
 }
 

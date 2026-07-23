@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -13,6 +14,10 @@ func FetchArtists() ([]Artist, error) {
 	defer apidata.Body.Close()
 
 	var artists []Artist
+
+	if apidata.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status: %s", apidata.Status)
+	}
 
 	err = json.NewDecoder(apidata.Body).Decode(&artists)
 	if err != nil {

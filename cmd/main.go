@@ -24,7 +24,7 @@ func Handler(artists []internal.Artist) http.HandlerFunc {
 	}
 }
 
-func ArtistDetailsHandler(artists []internal.Artist) http.HandlerFunc {
+func ArtistDetailsHandler(artists []internal.Artist, relations []internal.Relation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idText := r.URL.Query().Get("id")
 		idInt, err := strconv.Atoi(idText)
@@ -32,25 +32,48 @@ func ArtistDetailsHandler(artists []internal.Artist) http.HandlerFunc {
 			http.Error(w, "Could not find artist ID", http.StatusBadRequest)
 			return
 		}
+		var FoundArtist internal.Artist
+		var FoundRelation internal.Relation
+
+		type Find struct {
+			Artist   internal.Artist
+			Relation internal.Relation
+		}
+
 		for i := 0; i < len(artists); i++ {
 			artist := artists[i]
 			if artist.ID == idInt {
-				w.Header().Set("Content-Type", "application/json")
-
-				err = json.NewEncoder(w).Encode(artist)
-				if err != nil {
-					http.Error(w, "Could not encode artist", http.StatusInternalServerError)
-					return
-				}
-
-				return
+				FoundArtist = artist
+				break
 			}
 		}
-		http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
+		for i := 0; i < len(relations); i++ {
+			relation := relations[i]
+			if relation.ID == idInt {
+				FoundRelation = relation
+				break
+			}
+		}
+		if FoundArtist.ID == 0 || FoundRelation.ID == 0 {
+			http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
+			return
+		}
+		result := Find{
+			Artist:   FoundArtist,
+			Relation: FoundRelation,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(result)
+		if err != nil {
+			http.Error(w, "Could not encode result", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
 func main() {
+	//Artists
 	artists, err := internal.FetchArtists()
 	if err != nil {
 		fmt.Println("API error:", err)
@@ -62,10 +85,21 @@ func main() {
 		return
 	}
 
+	//Relations
+	relations, err := internal.FetchRelations()
+	if err != nil {
+		fmt.Println("API error:", err)
+		return
+	}
+	if len(relations) == 0 {
+		fmt.Println("No location and dates received")
+		return
+	}
+
 	//this is how i send data to the html
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Handler(artists))
-	mux.HandleFunc("/artist", ArtistDetailsHandler(artists))
+	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))
 
 	// the StripPrefix is used to prevent the html to repeat a path
 	// and ending up somewere it doesnt exists
@@ -83,4 +117,5 @@ func main() {
 		fmt.Println("Server error:", err)
 
 	}
+
 }

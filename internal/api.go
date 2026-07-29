@@ -29,3 +29,25 @@ func FetchArtists() ([]Artist, error) {
 
 	return artists, nil
 }
+
+func FetchRelations() ([]Relation, error) {
+	apidata, err := http.Get("https://groupietrackers.herokuapp.com/api/relation")
+	if err != nil {
+		return nil, err
+	}
+
+	defer apidata.Body.Close()
+
+	var relations RelationsResponse
+
+	if apidata.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status: %s", apidata.Status)
+	}
+
+	err = json.NewDecoder(apidata.Body).Decode(&relations)
+	if err != nil {
+		return nil, err
+	}
+
+	return relations.Index, nil
+}

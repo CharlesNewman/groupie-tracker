@@ -6,6 +6,8 @@ const panelName = document.querySelector(".panel-name");
 const panelImage = document.querySelector(".panel-image");
 const panelInfo = document.querySelector(".panel-info");
 const panelMembers = document.querySelector(".panel-members");
+const panelLocations = document.querySelector(".panel-locations");
+const panelConcerts = document.querySelector(".panel-concerts");
 
 viewDetailsButtons.forEach(function (button) {
     button.addEventListener("click", async function () {
@@ -18,7 +20,10 @@ viewDetailsButtons.forEach(function (button) {
                 throw new Error("Could not load artist");
             }
 
-            const artist = await response.json();
+            const data = await response.json();
+
+            const artist = data.Artist || data.artist;
+            const relation = data.Relation || data.relation;
 
             panelName.textContent = artist.name;
             panelImage.src = artist.image;
@@ -35,6 +40,31 @@ viewDetailsButtons.forEach(function (button) {
                 memberItem.textContent = member;
                 panelMembers.appendChild(memberItem);
             });
+
+            panelLocations.innerHTML = "<h3>Locations</h3>";
+            panelConcerts.innerHTML = "<h3>Concert Dates</h3>";
+
+            for (const location in relation.datesLocations) {
+                const locationItem = document.createElement("p");
+                locationItem.textContent = location.replaceAll("_", " ");
+                panelLocations.appendChild(locationItem);
+
+                const concertGroup = document.createElement("div");
+
+                const concertLocation = document.createElement("strong");
+                concertLocation.textContent =
+                    location.replaceAll("_", " ") + ":";
+
+                concertGroup.appendChild(concertLocation);
+
+                relation.datesLocations[location].forEach(function (date) {
+                    const dateItem = document.createElement("p");
+                    dateItem.textContent = date;
+                    concertGroup.appendChild(dateItem);
+                });
+
+                panelConcerts.appendChild(concertGroup);
+            }
 
             artistPanel.classList.add("open");
             document.body.classList.add("panel-open");

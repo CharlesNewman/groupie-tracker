@@ -36,8 +36,8 @@ func ArtistDetailsHandler(artists []internal.Artist, relations []internal.Relati
 		var FoundRelation internal.Relation
 
 		type Find struct {
-			Artist   internal.Artist
-			Relation internal.Relation
+			Artist   internal.Artist   `json:"artist"`
+			Relation internal.Relation `json:"relation"`
 		}
 
 		for i := 0; i < len(artists); i++ {

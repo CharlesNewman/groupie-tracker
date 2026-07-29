@@ -128,7 +128,7 @@ main {
 
 .artist-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
 }
 
@@ -215,9 +215,7 @@ main {
     transition: margin-right 0.3s ease;
 }
 
-body.panel-open main {
-    margin-right: 380px;
-}
+body.panel-open main {}
 
 .close-panel {
     display: block;

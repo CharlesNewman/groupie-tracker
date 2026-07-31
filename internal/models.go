@@ -20,3 +20,22 @@ type Relation struct {
 type RelationsResponse struct {
 	Index []Relation `json:"index"`
 }
+
+type Location struct {
+	ID        int      `json:"id"`
+	Locations []string `json:"locations"`
+	Dates     string   `json:"dates"`
+}
+
+type LocationResponse struct {
+	Index []Location `json:"index"`
+}
+
+type Date struct {
+	ID    int      `json:"id"`
+	Dates []string `json:"dates"`
+}
+
+type DateResponse struct {
+	Index []Date `json:"index"`
+}

@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"groupie-tracker/internal"
 	"html/template"
 	"net/http"
 	"os"
 	"strconv"
+
+	"groupie-tracker/internal"
 )
 
 func Handler(artists []internal.Artist) http.HandlerFunc {
@@ -73,7 +74,7 @@ func ArtistDetailsHandler(artists []internal.Artist, relations []internal.Relati
 }
 
 func main() {
-	//Artists
+	// Artists
 	artists, err := internal.FetchArtists()
 	if err != nil {
 		fmt.Println("API error:", err)
@@ -84,8 +85,8 @@ func main() {
 		fmt.Println("No artists received")
 		return
 	}
-
-	//Relations
+	fmt.Println("Artists:", len(artists))
+	// Relations
 	relations, err := internal.FetchRelations()
 	if err != nil {
 		fmt.Println("API error:", err)
@@ -95,8 +96,29 @@ func main() {
 		fmt.Println("No location and dates received")
 		return
 	}
+	// Locations
+	locations, err := internal.FetchLocations()
+	if err != nil {
+		fmt.Println("API error:", err)
+		return
+	}
+	if len(locations) == 0 {
+		fmt.Println("No locations received")
+		return
+	}
+	// Dates
+	dates, err := internal.FetchDates()
+	if err != nil {
+		fmt.Println("API error:", err)
+		return
+	}
+	if len(dates) == 0 {
+		fmt.Println("No dates received")
+		return
+	}
+	fmt.Println("Dates:", len(dates))
 
-	//this is how i send data to the html
+	// this is how i send data to the html
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Handler(artists))
 	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))
@@ -115,7 +137,5 @@ func main() {
 	err = http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		fmt.Println("Server error:", err)
-
 	}
-
 }

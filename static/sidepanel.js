@@ -33,8 +33,6 @@ viewDetailsButtons.forEach(function (button) {
                 "Created: " + artist.creationDate +
                 " | First album: " + artist.firstAlbum;
 
-            panelMembers.innerHTML = "<h3>Members</h3>";
-
             artist.members.forEach(function (member) {
                 const memberItem = document.createElement("p");
                 memberItem.textContent = member;

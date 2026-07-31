@@ -164,7 +164,14 @@ a:hover {
 }
 
 .artist-panel {
+    text-align: center;
     display: none;
+    font-weight: bold;
+}
+
+.panel-image {
+    display: block;
+    margin: 0 auto;
 }
 
 .artist-panel.open {

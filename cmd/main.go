@@ -116,7 +116,6 @@ func main() {
 		fmt.Println("No dates received")
 		return
 	}
-	fmt.Println("Dates:", len(dates))
 
 	// this is how i send data to the html
 	mux := http.NewServeMux()

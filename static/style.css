@@ -222,8 +222,6 @@ main {
     transition: margin-right 0.3s ease;
 }
 
-body.panel-open main {}
-
 .close-panel {
     display: block;
     margin-left: auto;
@@ -239,4 +237,35 @@ body.panel-open main {}
 
 body.dark-mode .close-panel {
     color: white;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 30px 0;
+}
+
+.pagination a {
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    background: #111;
+    color: white;
+    transition: 0.2s;
+}
+
+body.dark-mode .pagination a {
+    background: white;
+    color: #111;
+}
+
+.pagination a:hover {
+    transform: translateY(-2px);
+    opacity: 0.85;
+}
+
+.pagination span {
+    font-weight: bold;
 }

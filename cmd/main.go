@@ -11,16 +11,66 @@ import (
 	"groupie-tracker/internal"
 )
 
+// For the pages
+type PageData struct {
+	Artists      []internal.Artist
+	CurrentPage  int
+	PreviousPage int
+	NextPage     int
+	HasPrevious  bool
+	HasNext      bool
+}
+
+// ////
 func Handler(artists []internal.Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		tmpl, err := template.ParseFiles("templates/index.html")
 		if err != nil {
 			http.Error(w, "Template Error", http.StatusInternalServerError)
 			return
 		}
-		err = tmpl.Execute(w, artists)
+
+		//For the pages
+		readPage := r.URL.Query().Get("page")
+		currentPage := 1
+		if readPage != "" {
+			pageNumber, err := strconv.Atoi(readPage)
+			if err != nil {
+				http.Error(w, "Invalid page number", http.StatusBadRequest)
+				return
+			}
+			if pageNumber < 1 {
+				http.Error(w, "Invalid page number", http.StatusBadRequest)
+				return
+			} else {
+				currentPage = pageNumber
+			}
+		}
+		pageSize := 12
+		start := (currentPage - 1) * pageSize
+		end := start + pageSize
+
+		if end > len(artists) {
+			end = len(artists)
+		}
+		PreviousPage := currentPage - 1
+		NextPage := currentPage + 1
+		HasPrevious := currentPage > 1
+		HasNext := end < len(artists)
+
+		pageData := PageData{
+			Artists:      artists[start:end],
+			CurrentPage:  currentPage,
+			PreviousPage: PreviousPage,
+			NextPage:     NextPage,
+			HasPrevious:  HasPrevious,
+			HasNext:      HasNext,
+		}
+
+		err = tmpl.Execute(w, pageData)
 		if err != nil {
-			http.Error(w, "Could not displace page", http.StatusInternalServerError)
+			http.Error(w, "Could not display page", http.StatusInternalServerError)
 		}
 	}
 }

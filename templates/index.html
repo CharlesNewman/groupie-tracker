@@ -37,7 +37,7 @@
 
     <main>
         <div class="artist-grid">
-            {{range .}}
+            {{range .Artists}}
             <section class="artist-card">
                 <h2>{{.Name}}</h2>
 
@@ -63,20 +63,32 @@
             </div>
         </div>
         <details>
-                <summary>Members</summary>
-                <div class="panel-members"></div>
-        </details>
-
-            <details>    
-                <summary>Locations</summary>
-                <div class="panel-locations"></div>
+            <summary>Members</summary>
+            <div class="panel-members"></div>
         </details>
 
         <details>
-                <summary>Dates</summary>
-                <div class="panel-concerts"></div>
+            <summary>Locations</summary>
+            <div class="panel-locations"></div>
         </details>
-            </aside>
+
+        <details>
+            <summary>Dates</summary>
+            <div class="panel-concerts"></div>
+        </details>
+    </aside>
+
+    <div class="pagination">
+        {{if .HasPrevious}}
+        <a href="/?page={{.PreviousPage}}">Previous</a>
+        {{end}}
+
+        <span>Page {{.CurrentPage}}</span>
+
+        {{if .HasNext}}
+        <a href="/?page={{.NextPage}}">Next</a>
+        {{end}}
+    </div>
 
     <script src="/static/darkmode.js"></script>
     <script src="/static/sidepanel.js"></script>

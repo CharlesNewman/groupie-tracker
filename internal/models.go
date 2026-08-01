@@ -39,3 +39,12 @@ type Date struct {
 type DateResponse struct {
 	Index []Date `json:"index"`
 }
+
+type PageData struct {
+	Artists      []Artist
+	CurrentPage  int
+	PreviousPage int
+	NextPage     int
+	HasPrevious  bool
+	HasNext      bool
+}

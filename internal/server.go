@@ -47,11 +47,6 @@ func StartServer() error {
 		return fmt.Errorf("no dates received")
 	}
 
-	fmt.Println("Artists:", len(artists))
-	fmt.Println("Relations:", len(relations))
-	fmt.Println("Locations:", len(locations))
-	fmt.Println("Dates:", len(dates))
-
 	// Routes
 	mux := http.NewServeMux()
 

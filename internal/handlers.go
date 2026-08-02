@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"text/template"
 )
 
@@ -56,6 +57,56 @@ func Handler(artists []Artist) http.HandlerFunc {
 			http.Error(w, "Could not display page", http.StatusInternalServerError)
 		}
 
+	}
+}
+
+func SearchHandler(artists []Artist) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		SearchRequest := r.URL.Query().Get("query")
+		lowerSearchRequest := strings.ToLower(SearchRequest)
+		var matches []Artist
+		for i := 0; i < len(artists); i++ {
+			artist := artists[i]
+			lowerArtist := strings.ToLower(artist.Name)
+			if strings.Contains(lowerArtist, lowerSearchRequest) {
+				matches = append(matches, artist)
+			}
+		}
+		pageData := PageData{
+			Artists:     matches,
+			CurrentPage: 1,
+		}
+		tmpl, err := template.ParseFiles("templates/index.html")
+		if err != nil {
+			http.Error(w, "Could not display request", http.StatusBadRequest)
+			return
+		}
+		err = tmpl.Execute(w, pageData)
+		if err != nil {
+			http.Error(w, "Could not display page", http.StatusBadRequest)
+		}
+	}
+}
+
+func SuggestionHandler(artists []Artist) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		SuggestionRequest := r.URL.Query().Get("query")
+		lowerSuggestionRequest := strings.ToLower(SuggestionRequest)
+		var matches []Artist
+		for i := 0; i < len(artists); i++ {
+			artist := artists[i]
+			lowerArtist := strings.ToLower(artist.Name)
+			if strings.Contains(lowerArtist, lowerSuggestionRequest) {
+				matches = append(matches, artist)
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+
+		err := json.NewEncoder(w).Encode(matches)
+		if err != nil {
+			http.Error(w, "Could not encode suggestions", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

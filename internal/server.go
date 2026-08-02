@@ -52,6 +52,8 @@ func StartServer() error {
 
 	mux.HandleFunc("/", Handler(artists))
 	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))
+	mux.HandleFunc("/search", SearchHandler(artists))
+	mux.HandleFunc("/suggestions", SuggestionHandler(artists))
 
 	// Static files
 	fileServer := http.FileServer(http.Dir("static"))

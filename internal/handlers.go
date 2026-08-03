@@ -17,6 +17,8 @@ func Handler(artists []Artist) http.HandlerFunc {
 		}
 		readPage := r.URL.Query().Get("page")
 		currentPage := 1
+		pageSize := 12
+		maxPage := (len(artists) + pageSize - 1) / pageSize
 		if readPage != "" {
 			pageNumber, err := strconv.Atoi(readPage)
 			if err != nil {
@@ -26,11 +28,14 @@ func Handler(artists []Artist) http.HandlerFunc {
 			if pageNumber < 1 {
 				ErrorHandler(w, "Invalid page number", http.StatusBadRequest)
 				return
+			} else if pageNumber > maxPage {
+				ErrorHandler(w, "Invalid page number", http.StatusNotFound)
+				return
 			} else {
 				currentPage = pageNumber
 			}
 		}
-		pageSize := 12
+
 		start := (currentPage - 1) * pageSize
 		end := start + pageSize
 

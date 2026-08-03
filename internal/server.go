@@ -48,7 +48,7 @@ func StartServer() error {
 	}
 
 	// Routes
-	mux := SetupRoutes(artists, relations)
+	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", Handler(artists))
 	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))

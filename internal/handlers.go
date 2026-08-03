@@ -157,3 +157,55 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 		}
 	}
 }
+
+func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idText := r.URL.Query().Get("id")
+		idInt, err := strconv.Atoi(idText)
+		if err != nil {
+			http.Error(w, "Could not find artist ID", http.StatusBadRequest)
+			return
+		}
+		type Find struct {
+			Artist   Artist   `json:"artist"`
+			Relation Relation `json:"relation"`
+		}
+
+		var FoundArtist Artist
+		var FoundRelation Relation
+
+		for i := 0; i < len(artists); i++ {
+			artist := artists[i]
+			if artist.ID == idInt {
+				FoundArtist = artist
+				break
+			}
+		}
+		for j := 0; j < len(relations); j++ {
+			relation := relations[j]
+			if relation.ID == idInt {
+				FoundRelation = relation
+				break
+			}
+		}
+		if FoundArtist.ID == 0 || FoundRelation.ID == 0 {
+			http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
+			return
+		}
+		result := Find{
+			Artist:   FoundArtist,
+			Relation: FoundRelation,
+		}
+		tmpl, err := template.ParseFiles("templates/artist-details.html")
+		if err != nil {
+			http.Error(w, "Could not load details page", http.StatusInternalServerError)
+			return
+		}
+
+		err = tmpl.Execute(w, result)
+		if err != nil {
+			http.Error(w, "Could not display details page", http.StatusInternalServerError)
+			return
+		}
+	}
+}

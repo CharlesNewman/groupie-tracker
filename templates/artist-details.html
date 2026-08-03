@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{.Artist.Name}} - Groupie Tracker</title>
+
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <main class="details-page">
+        <a href="/" class="back-button">← Back</a>
+
+        <section class="details-card">
+            <img src="{{.Artist.Image}}" alt="{{.Artist.Name}}">
+
+            <h1>{{.Artist.Name}}</h1>
+
+            <p>Created: {{.Artist.CreationDate}}</p>
+            <p>First album: {{.Artist.FirstAlbum}}</p>
+
+            <h2>Members</h2>
+
+            <ul>
+                {{range .Artist.Members}}
+                <li>{{.}}</li>
+                {{end}}
+            </ul>
+
+            <h2>Concerts</h2>
+
+            {{range $location, $dates := .Relation.DatesLocations}}
+            <section class="concert-item">
+                <h3>{{$location}}</h3>
+
+                <ul>
+                    {{range $dates}}
+                    <li>{{.}}</li>
+                    {{end}}
+                </ul>
+            </section>
+            {{end}}
+        </section>
+    </main>
+
+    <script src="/static/darkmode.js"></script>
+    <script src="/static/background.js"></script>
+</body>
+
+</html>

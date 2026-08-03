@@ -205,6 +205,7 @@ header h1 {
 
 .header-search>button,
 .view-details-button,
+.quick-view-button,
 .pagination a {
     padding: 8px 12px;
 
@@ -226,12 +227,30 @@ header h1 {
         filter 0.2s ease;
 }
 
+.quick-view-button,
 .view-details-button {
-    margin-top: 14px;
+    display: inline-block;
+    width: 50%;
+
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: normal;
+    margin-bottom: 8px;
+
+    text-align: center;
+    text-decoration: none;
+
+    cursor: pointer;
 }
 
 .header-search button:hover,
-.view-details-button:hover,
+.view-details-button,
+.quick-view-button:hover,
 .pagination a:hover {
     transform: translateY(-2px);
     filter: brightness(1.05);
@@ -303,6 +322,7 @@ main {
 }
 
 .artist-card img {
+    margin-bottom: 12px;
     width: 100%;
     max-width: 220px;
 
@@ -347,6 +367,41 @@ main {
     backdrop-filter: blur(14px);
 
     transition: right 0.3s ease;
+}
+
+
+.panel-members-section {
+    margin: 18px 0;
+    padding: 14px;
+    background-color: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.panel-members-section h3 {
+    margin-top: 0;
+}
+
+.panel-members p {
+    margin: 8px 0;
+    padding: 9px 12px 9px 32px;
+    position: relative;
+
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    text-align: left;
+    font-weight: normal;
+}
+
+.panel-members p::before {
+    content: "♪";
+    position: absolute;
+    left: 11px;
+
+    color: var(--accent);
+    font-weight: bold;
 }
 
 .panel-members,
@@ -400,6 +455,41 @@ summary {
 
 .panel-info {
     color: var(--text-soft);
+}
+
+.artist-info {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+
+    margin: 12px 0 16px;
+}
+
+.info-item {
+    padding: 8px 12px;
+
+    background-color: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    text-align: center;
+}
+
+.info-label {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--text-soft);
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.info-value {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .close-panel {

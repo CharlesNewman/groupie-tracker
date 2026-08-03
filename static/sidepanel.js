@@ -1,6 +1,6 @@
 const artistPanel = document.querySelector(".artist-panel");
 const closePanelButton = document.querySelector(".close-panel");
-const viewDetailsButtons = document.querySelectorAll(".view-details-button");
+const viewDetailsButtons = document.querySelectorAll(".quick-view-button");
 
 const panelName = document.querySelector(".panel-name");
 const panelImage = document.querySelector(".panel-image");
@@ -79,4 +79,14 @@ viewDetailsButtons.forEach(function (button) {
 closePanelButton.addEventListener("click", function () {
     artistPanel.classList.remove("open");
     document.body.classList.remove("panel-open");
+});
+
+document.addEventListener("click", function (event) {
+    const clickedInsidePanel = artistPanel.contains(event.target);
+    const clickedViewButton = event.target.closest(".quick-view-button");
+
+    if (!clickedInsidePanel && !clickedViewButton) {
+        artistPanel.classList.remove("open");
+        document.body.classList.remove("panel-open");
+    }
 });

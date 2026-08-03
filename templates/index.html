@@ -45,7 +45,10 @@
                 <img src="{{.Image}}" alt="{{.Name}}">
 
 
-                <button class="view-details-button" data-artist-id="{{.ID}}" type="button">View Details</button>
+                <button class="quick-view-button" data-artist-id="{{.ID}}" type="button">Quick View</button>
+                <a class="view-details-button" href="/artist-details?id={{.ID}}">
+                    View Details
+                </a>
             </section>
             {{end}}
         </div>
@@ -62,10 +65,10 @@
                 <p class="panel-info">Artist information</p>
             </div>
         </div>
-        <details>
-            <summary>Members</summary>
+        <section class="panel-members-section">
+            <h3>Members</h3>
             <div class="panel-members"></div>
-        </details>
+        </section>
 
         <details>
             <summary>Concert Dates</summary>

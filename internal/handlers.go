@@ -10,7 +10,6 @@ import (
 
 func Handler(artists []Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		tmpl, err := template.ParseFiles("templates/index.html")
 		if err != nil {
 			http.Error(w, "Template Error", http.StatusInternalServerError)
@@ -196,11 +195,21 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 			Artist:   FoundArtist,
 			Relation: FoundRelation,
 		}
-		tmpl, err := template.ParseFiles("templates/artist-details.html")
-		if err != nil {
-			http.Error(w, "Could not load details page", http.StatusInternalServerError)
-			return
+
+		funcMap := template.FuncMap{
+			"formatLocation": func(location string) string {
+				location = strings.ReplaceAll(location, "_", " ")
+				location = strings.ReplaceAll(location, "-", " ")
+				location = strings.Title(location)
+				location = strings.ReplaceAll(location, "Usa", "USA")
+				location = strings.ReplaceAll(location, "Uk", "UK")
+				return location
+			},
 		}
+
+		tmpl, err := template.New("artist-details.html").
+			Funcs(funcMap).
+			ParseFiles("templates/artist-details.html")
 
 		err = tmpl.Execute(w, result)
 		if err != nil {

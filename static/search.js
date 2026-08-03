@@ -47,10 +47,10 @@ searchInput.addEventListener("input", async function () {
             suggestion.appendChild(name);
 
             suggestion.addEventListener("click", function () {
-                searchInput.value = artist.name;
                 suggestionsBox.innerHTML = "";
                 suggestionsBox.classList.remove("show");
-                searchForm.submit();
+
+                window.location.href = `/artist-details?id=${artist.id}`;
             });
 
             suggestionsBox.appendChild(suggestion);

@@ -11,6 +11,11 @@ import (
 func Handler(artists []Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		if r.URL.Path != "/" {
+			ErrorHandler(w, "Invalid path", http.StatusNotFound)
+			return
+		}
+
 		if r.Method != http.MethodGet {
 			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -65,8 +70,8 @@ func Handler(artists []Artist) http.HandlerFunc {
 		err = tmpl.Execute(w, pageData)
 		if err != nil {
 			ErrorHandler(w, "Could not display page", http.StatusInternalServerError)
+			return
 		}
-
 	}
 }
 
@@ -94,12 +99,13 @@ func SearchHandler(artists []Artist) http.HandlerFunc {
 		}
 		tmpl, err := template.ParseFiles("templates/index.html")
 		if err != nil {
-			ErrorHandler(w, "Could not display request", http.StatusBadRequest)
+			ErrorHandler(w, "Could not display request", http.StatusInternalServerError)
 			return
 		}
 		err = tmpl.Execute(w, pageData)
 		if err != nil {
-			ErrorHandler(w, "Could not display page", http.StatusBadRequest)
+			ErrorHandler(w, "Could not display page", http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -108,7 +114,8 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method != http.MethodGet {
-			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			//Use ErrorHandler for full pages if you do here it will break response.json() in javascript
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
@@ -126,7 +133,8 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 
 		err := json.NewEncoder(w).Encode(matches)
 		if err != nil {
-			ErrorHandler(w, "Could not encode suggestions", http.StatusInternalServerError)
+			//Use ErrorHandler for full pages if you do here it will break response.json() in javascript
+			http.Error(w, "Could not encode suggestions", http.StatusInternalServerError)
 			return
 		}
 	}
@@ -135,15 +143,17 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		//The errors work with javascript here as well thats why we use http.Error instead the ErrorHandler
+
 		if r.Method != http.MethodGet {
-			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
 		idText := r.URL.Query().Get("id")
 		idInt, err := strconv.Atoi(idText)
 		if err != nil {
-			ErrorHandler(w, "Could not find artist ID", http.StatusBadRequest)
+			http.Error(w, "Could not find artist ID", http.StatusBadRequest)
 			return
 		}
 		var FoundArtist Artist
@@ -169,7 +179,7 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 			}
 		}
 		if FoundArtist.ID == 0 || FoundRelation.ID == 0 {
-			ErrorHandler(w, "Mismatch Artist ID", http.StatusNotFound)
+			http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
 			return
 		}
 		result := Find{
@@ -180,7 +190,7 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(result)
 		if err != nil {
-			ErrorHandler(w, "Could not encode result", http.StatusInternalServerError)
+			http.Error(w, "Could not encode result", http.StatusInternalServerError)
 			return
 		}
 	}
@@ -252,6 +262,10 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 		}
 
 		err = tmpl.Execute(w, result)
+		if err != nil {
+			ErrorHandler(w, "Could not display details page", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -268,7 +282,7 @@ func ErrorHandler(w http.ResponseWriter, message string, statusCode int) {
 	}
 	tmpl, err := template.ParseFiles("templates/error.html")
 	if err != nil {
-		ErrorHandler(w, "Template Error", http.StatusInternalServerError)
+		http.Error(w, "Template Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -276,7 +290,7 @@ func ErrorHandler(w http.ResponseWriter, message string, statusCode int) {
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		ErrorHandler(w, "Could not display error page", http.StatusInternalServerError)
+		http.Error(w, "Could not display error page", http.StatusInternalServerError)
 		return
 	}
 }

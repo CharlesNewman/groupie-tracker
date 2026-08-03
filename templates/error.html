@@ -27,7 +27,7 @@
         </div>
 
         <form class="header-search" action="/search" method="GET">
-            <input type="text" name="query" placeholder="Search artists...">
+            <input type="text" name="query" placeholder="Search artists..." required>
             <button type="submit">Search</button>
             <div class="search-suggestions"></div>
         </form>
@@ -46,6 +46,7 @@
             <p class="error-message">{{.Message}}</p>
 
             <a href="/" class="error-home-button">Back Home</a>
+
         </section>
     </main>
 

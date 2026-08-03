@@ -48,3 +48,8 @@ type PageData struct {
 	HasPrevious  bool
 	HasNext      bool
 }
+
+type Find struct {
+	Artist   Artist   `json:"artist"`
+	Relation Relation `json:"relation"`
+}

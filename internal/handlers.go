@@ -93,6 +93,10 @@ func SearchHandler(artists []Artist) http.HandlerFunc {
 				matches = append(matches, artist)
 			}
 		}
+		if strings.TrimSpace(SearchRequest) == "" {
+			ErrorHandler(w, "Search cannot be empty", http.StatusBadRequest)
+			return
+		}
 		pageData := PageData{
 			Artists:     matches,
 			CurrentPage: 1,
@@ -159,11 +163,6 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 		var FoundArtist Artist
 		var FoundRelation Relation
 
-		type Find struct {
-			Artist   Artist   `json:"artist"`
-			Relation Relation `json:"relation"`
-		}
-
 		for i := 0; i < len(artists); i++ {
 			artist := artists[i]
 			if artist.ID == idInt {
@@ -209,10 +208,6 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 		if err != nil {
 			ErrorHandler(w, "Could not find artist ID", http.StatusBadRequest)
 			return
-		}
-		type Find struct {
-			Artist   Artist   `json:"artist"`
-			Relation Relation `json:"relation"`
 		}
 
 		var FoundArtist Artist

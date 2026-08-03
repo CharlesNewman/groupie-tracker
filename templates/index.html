@@ -26,7 +26,7 @@
         </div>
 
         <form class="header-search" action="/search" method="GET">
-            <input type="text" name="query" placeholder="Search artists...">
+            <input type="text" name="query" placeholder="Search artists..." required>
             <button type="submit">Search</button>
             <div class="search-suggestions"></div>
         </form>
@@ -50,6 +50,11 @@
                     View Details
                 </a>
             </section>
+            {{end}}
+            {{if .Artists}}
+            <!-- artist cards here -->
+            {{else}}
+            <p class="no-results">No artists found.</p>
             {{end}}
         </div>
     </main>

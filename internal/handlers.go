@@ -10,6 +10,12 @@ import (
 
 func Handler(artists []Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method != http.MethodGet {
+			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		tmpl, err := template.ParseFiles("templates/index.html")
 		if err != nil {
 			ErrorHandler(w, "Template Error", http.StatusInternalServerError)
@@ -66,6 +72,12 @@ func Handler(artists []Artist) http.HandlerFunc {
 
 func SearchHandler(artists []Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method != http.MethodGet {
+			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		SearchRequest := r.URL.Query().Get("query")
 		lowerSearchRequest := strings.ToLower(SearchRequest)
 		var matches []Artist
@@ -94,6 +106,12 @@ func SearchHandler(artists []Artist) http.HandlerFunc {
 
 func SuggestionHandler(artists []Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method != http.MethodGet {
+			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		SuggestionRequest := r.URL.Query().Get("query")
 		lowerSuggestionRequest := strings.ToLower(SuggestionRequest)
 		var matches []Artist
@@ -116,6 +134,12 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 
 func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method != http.MethodGet {
+			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		idText := r.URL.Query().Get("id")
 		idInt, err := strconv.Atoi(idText)
 		if err != nil {
@@ -164,6 +188,12 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 
 func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method != http.MethodGet {
+			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		idText := r.URL.Query().Get("id")
 		idInt, err := strconv.Atoi(idText)
 		if err != nil {

@@ -6,20 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Groupie Tracker</title>
-
+    <link rel="icon" type="image/png" href="/static/logo.png">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
     <header>
-        <h1>Groupie Tracker</h1>
+        <div class="site-logo">
+            <a href="/" class="site-logo">
+                <img src="/static/logo.png" alt="Groupie Tracker logo">
+                <h1>Groupie Tracker</h1>
+            </a>
+        </div>
 
         <div class="navigation-buttons">
             <nav>
-                <a href="/">Home</a>
-                <a href="/artists">Artists</a>
-                <a href="/locations">Locations</a>
-                <a href="/concerts">Concerts</a>
                 <a href="/about">About</a>
             </nav>
         </div>
@@ -43,8 +44,7 @@
 
                 <img src="{{.Image}}" alt="{{.Name}}">
 
-                <p>Created: {{.CreationDate}}</p>
-                <p>First album: {{.FirstAlbum}}</p>
+
                 <button class="view-details-button" data-artist-id="{{.ID}}" type="button">View Details</button>
             </section>
             {{end}}
@@ -68,12 +68,7 @@
         </details>
 
         <details>
-            <summary>Locations</summary>
-            <div class="panel-locations"></div>
-        </details>
-
-        <details>
-            <summary>Dates</summary>
+            <summary>Concert Dates</summary>
             <div class="panel-concerts"></div>
         </details>
     </aside>
@@ -93,6 +88,7 @@
     <script src="/static/darkmode.js"></script>
     <script src="/static/sidepanel.js"></script>
     <script src="/static/search.js"></script>
+    <script src="/static/background.js"></script>
 
 </body>
 

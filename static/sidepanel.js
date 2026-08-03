@@ -6,7 +6,6 @@ const panelName = document.querySelector(".panel-name");
 const panelImage = document.querySelector(".panel-image");
 const panelInfo = document.querySelector(".panel-info");
 const panelMembers = document.querySelector(".panel-members");
-const panelLocations = document.querySelector(".panel-locations");
 const panelConcerts = document.querySelector(".panel-concerts");
 
 viewDetailsButtons.forEach(function (button) {
@@ -22,8 +21,8 @@ viewDetailsButtons.forEach(function (button) {
 
             const data = await response.json();
 
-            const artist = data.Artist || data.artist;
-            const relation = data.Relation || data.relation;
+            const artist = data.artist || data.Artist;
+            const relation = data.relation || data.Relation;
 
             panelName.textContent = artist.name;
             panelImage.src = artist.image;
@@ -33,25 +32,30 @@ viewDetailsButtons.forEach(function (button) {
                 "Created: " + artist.creationDate +
                 " | First album: " + artist.firstAlbum;
 
+            panelMembers.innerHTML = "";
+            panelConcerts.innerHTML = "";
+
             artist.members.forEach(function (member) {
                 const memberItem = document.createElement("p");
                 memberItem.textContent = member;
                 panelMembers.appendChild(memberItem);
             });
 
-            panelLocations.innerHTML = "<h3>Locations</h3>";
-            panelConcerts.innerHTML = "<h3>Concert Dates</h3>";
-
             for (const location in relation.datesLocations) {
-                const locationItem = document.createElement("p");
-                locationItem.textContent = location.replaceAll("_", " ");
-                panelLocations.appendChild(locationItem);
-
                 const concertGroup = document.createElement("div");
+                concertGroup.className = "concert-group";
 
                 const concertLocation = document.createElement("strong");
-                concertLocation.textContent =
-                    location.replaceAll("_", " ") + ":";
+                const formattedLocation = location
+                    .replaceAll("-", " ")
+                    .replaceAll("_", " ")
+                    .split(" ")
+                    .map(function (word) {
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    })
+                    .join(" ");
+
+                concertLocation.textContent = formattedLocation + ":";
 
                 concertGroup.appendChild(concertLocation);
 

@@ -5,17 +5,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Error</title>
+    <title>Error {{.Code}} - Groupie Tracker</title>
+
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-    <main>
-        <h1>{{.StatusCode}}</h1>
-        <h2>{{.Title}}</h2>
-        <p>{{.Message}}</p>
+    <header>
+        <div class="site-logo">
+            <a href="/" class="site-logo">
+                <img src="/static/logo.png" alt="Groupie Tracker logo">
+                <h1>Groupie Tracker</h1>
+            </a>
+        </div>
 
-        <a href="/">Return to home</a>
+        <div class="navigation-buttons">
+            <nav>
+                <a href="/">Home</a>
+            </nav>
+        </div>
+
+        <form class="header-search" action="/search" method="GET">
+            <input type="text" name="query" placeholder="Search artists...">
+            <button type="submit">Search</button>
+            <div class="search-suggestions"></div>
+        </form>
+
+        <button id="darkModeButton" type="button" aria-label="Toggle dark mode">
+            ⏾
+        </button>
+    </header>
+
+    <main class="error-page">
+        <section class="error-card">
+            <h1 class="error-code">{{.Code}}</h1>
+
+            <h2 class="error-title">Something went wrong</h2>
+
+            <p class="error-message">{{.Message}}</p>
+
+            <a href="/" class="error-home-button">Back Home</a>
+        </section>
     </main>
+
+    <script src="/static/darkmode.js"></script>
+    <script src="/static/search.js"></script>
+    <script src="/static/background.js"></script>
 </body>
 
 </html>

@@ -1,6 +1,6 @@
 const artistPanel = document.querySelector(".artist-panel");
 const closePanelButton = document.querySelector(".close-panel");
-const viewDetailsButtons = document.querySelectorAll(".quick-view-button");
+const quickViewButtons = document.querySelectorAll(".quick-view-button");
 
 const panelName = document.querySelector(".panel-name");
 const panelImage = document.querySelector(".panel-image");
@@ -8,7 +8,7 @@ const panelInfo = document.querySelector(".panel-info");
 const panelMembers = document.querySelector(".panel-members");
 const panelConcerts = document.querySelector(".panel-concerts");
 
-viewDetailsButtons.forEach(function (button) {
+quickViewButtons.forEach(function (button) {
     button.addEventListener("click", async function () {
         const artistID = button.dataset.artistId;
 
@@ -25,6 +25,7 @@ viewDetailsButtons.forEach(function (button) {
             const relation = data.relation || data.Relation;
 
             panelName.textContent = artist.name;
+
             panelImage.src = artist.image;
             panelImage.alt = artist.name;
 
@@ -38,6 +39,7 @@ viewDetailsButtons.forEach(function (button) {
             artist.members.forEach(function (member) {
                 const memberItem = document.createElement("p");
                 memberItem.textContent = member;
+
                 panelMembers.appendChild(memberItem);
             });
 
@@ -46,24 +48,44 @@ viewDetailsButtons.forEach(function (button) {
                 concertGroup.className = "concert-group";
 
                 const concertLocation = document.createElement("strong");
+                concertLocation.className = "panel-concert-location";
+
                 const formattedLocation = location
                     .replaceAll("-", " ")
                     .replaceAll("_", " ")
                     .split(" ")
                     .map(function (word) {
-                        return word.charAt(0).toUpperCase() + word.slice(1);
+                        const formattedWord =
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1);
+
+                        if (formattedWord === "Usa") {
+                            return "USA";
+                        }
+
+                        if (formattedWord === "Uk") {
+                            return "UK";
+                        }
+
+                        return formattedWord;
                     })
                     .join(" ");
 
-                concertLocation.textContent = formattedLocation + ":";
+                concertLocation.textContent = formattedLocation;
 
-                concertGroup.appendChild(concertLocation);
+                const datesContainer = document.createElement("div");
+                datesContainer.className = "panel-concert-dates";
 
                 relation.datesLocations[location].forEach(function (date) {
-                    const dateItem = document.createElement("p");
+                    const dateItem = document.createElement("span");
+                    dateItem.className = "panel-concert-date";
                     dateItem.textContent = date;
-                    concertGroup.appendChild(dateItem);
+
+                    datesContainer.appendChild(dateItem);
                 });
+
+                concertGroup.appendChild(concertLocation);
+                concertGroup.appendChild(datesContainer);
 
                 panelConcerts.appendChild(concertGroup);
             }
@@ -83,9 +105,10 @@ closePanelButton.addEventListener("click", function () {
 
 document.addEventListener("click", function (event) {
     const clickedInsidePanel = artistPanel.contains(event.target);
-    const clickedViewButton = event.target.closest(".quick-view-button");
+    const clickedQuickViewButton =
+        event.target.closest(".quick-view-button");
 
-    if (!clickedInsidePanel && !clickedViewButton) {
+    if (!clickedInsidePanel && !clickedQuickViewButton) {
         artistPanel.classList.remove("open");
         document.body.classList.remove("panel-open");
     }

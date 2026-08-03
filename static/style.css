@@ -435,6 +435,33 @@ summary {
     margin-top: 16px;
 }
 
+.panel-concert-dates {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+
+    margin: 10px 0 18px;
+}
+
+.panel-concert-date {
+    padding: 6px 10px;
+
+    background-color: var(--surface);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.panel-concert-date::before {
+    content: "📅";
+    margin-right: 5px;
+}
+
 .artist-panel.open {
     right: 0;
 }
@@ -988,4 +1015,77 @@ body.dark-mode #map .leaflet-control-attribution a {
 .concert-date::before {
     content: "📅";
     margin-right: 6px;
+}
+
+.error-page {
+    min-height: calc(100vh - 100px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px;
+}
+
+.error-card {
+    width: 100%;
+    max-width: 560px;
+
+    padding: 40px;
+
+    text-align: center;
+
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+
+    box-shadow: 0 12px 30px var(--shadow);
+    backdrop-filter: blur(14px);
+}
+
+.error-code {
+    margin: 0;
+
+    font-size: 80px;
+    line-height: 1;
+
+    color: var(--accent);
+}
+
+.error-title {
+    margin: 18px 0 10px;
+
+    font-size: 30px;
+}
+
+.error-message {
+    margin-bottom: 28px;
+
+    color: var(--text-soft);
+    font-size: 17px;
+}
+
+.error-home-button {
+    display: inline-block;
+
+    padding: 11px 20px;
+
+    background: linear-gradient(135deg,
+            var(--accent),
+            var(--accent-secondary));
+
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+
+    border-radius: 9px;
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+}
+
+.error-home-button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
 }

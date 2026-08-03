@@ -2,17 +2,17 @@ package internal
 
 import (
 	"encoding/json"
+	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
-	"text/template"
 )
 
 func Handler(artists []Artist) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("templates/index.html")
 		if err != nil {
-			http.Error(w, "Template Error", http.StatusInternalServerError)
+			ErrorHandler(w, "Template Error", http.StatusInternalServerError)
 			return
 		}
 		readPage := r.URL.Query().Get("page")
@@ -20,11 +20,11 @@ func Handler(artists []Artist) http.HandlerFunc {
 		if readPage != "" {
 			pageNumber, err := strconv.Atoi(readPage)
 			if err != nil {
-				http.Error(w, "Invalid page number", http.StatusBadRequest)
+				ErrorHandler(w, "Invalid page number", http.StatusBadRequest)
 				return
 			}
 			if pageNumber < 1 {
-				http.Error(w, "Invalid page number", http.StatusBadRequest)
+				ErrorHandler(w, "Invalid page number", http.StatusBadRequest)
 				return
 			} else {
 				currentPage = pageNumber
@@ -53,7 +53,7 @@ func Handler(artists []Artist) http.HandlerFunc {
 
 		err = tmpl.Execute(w, pageData)
 		if err != nil {
-			http.Error(w, "Could not display page", http.StatusInternalServerError)
+			ErrorHandler(w, "Could not display page", http.StatusInternalServerError)
 		}
 
 	}
@@ -77,12 +77,12 @@ func SearchHandler(artists []Artist) http.HandlerFunc {
 		}
 		tmpl, err := template.ParseFiles("templates/index.html")
 		if err != nil {
-			http.Error(w, "Could not display request", http.StatusBadRequest)
+			ErrorHandler(w, "Could not display request", http.StatusBadRequest)
 			return
 		}
 		err = tmpl.Execute(w, pageData)
 		if err != nil {
-			http.Error(w, "Could not display page", http.StatusBadRequest)
+			ErrorHandler(w, "Could not display page", http.StatusBadRequest)
 		}
 	}
 }
@@ -103,7 +103,7 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 
 		err := json.NewEncoder(w).Encode(matches)
 		if err != nil {
-			http.Error(w, "Could not encode suggestions", http.StatusInternalServerError)
+			ErrorHandler(w, "Could not encode suggestions", http.StatusInternalServerError)
 			return
 		}
 	}
@@ -114,7 +114,7 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 		idText := r.URL.Query().Get("id")
 		idInt, err := strconv.Atoi(idText)
 		if err != nil {
-			http.Error(w, "Could not find artist ID", http.StatusBadRequest)
+			ErrorHandler(w, "Could not find artist ID", http.StatusBadRequest)
 			return
 		}
 		var FoundArtist Artist
@@ -140,7 +140,7 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 			}
 		}
 		if FoundArtist.ID == 0 || FoundRelation.ID == 0 {
-			http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
+			ErrorHandler(w, "Mismatch Artist ID", http.StatusNotFound)
 			return
 		}
 		result := Find{
@@ -151,7 +151,7 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(result)
 		if err != nil {
-			http.Error(w, "Could not encode result", http.StatusInternalServerError)
+			ErrorHandler(w, "Could not encode result", http.StatusInternalServerError)
 			return
 		}
 	}
@@ -162,7 +162,7 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 		idText := r.URL.Query().Get("id")
 		idInt, err := strconv.Atoi(idText)
 		if err != nil {
-			http.Error(w, "Could not find artist ID", http.StatusBadRequest)
+			ErrorHandler(w, "Could not find artist ID", http.StatusBadRequest)
 			return
 		}
 		type Find struct {
@@ -188,7 +188,7 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 			}
 		}
 		if FoundArtist.ID == 0 || FoundRelation.ID == 0 {
-			http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
+			ErrorHandler(w, "Mismatch Artist ID", http.StatusNotFound)
 			return
 		}
 		result := Find{
@@ -211,10 +211,37 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 			Funcs(funcMap).
 			ParseFiles("templates/artist-details.html")
 
-		err = tmpl.Execute(w, result)
 		if err != nil {
-			http.Error(w, "Could not display details page", http.StatusInternalServerError)
+			ErrorHandler(w, "Could not load details page", http.StatusInternalServerError)
 			return
 		}
+
+		err = tmpl.Execute(w, result)
+	}
+}
+
+func ErrorHandler(w http.ResponseWriter, message string, statusCode int) {
+
+	type ErrorData struct {
+		Code    int
+		Message string
+	}
+
+	data := ErrorData{
+		Code:    statusCode,
+		Message: message,
+	}
+	tmpl, err := template.ParseFiles("templates/error.html")
+	if err != nil {
+		ErrorHandler(w, "Template Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(statusCode)
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		ErrorHandler(w, "Could not display error page", http.StatusInternalServerError)
+		return
 	}
 }

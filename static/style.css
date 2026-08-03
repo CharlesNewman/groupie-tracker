@@ -113,6 +113,8 @@ header {
     display: flex;
     align-items: center;
     gap: 20px;
+    position: relative;
+    z-index: 2000;
 
     padding: 20px;
 
@@ -182,7 +184,7 @@ header h1 {
 
 .header-search {
     position: relative;
-
+    z-index: 2100;
     display: flex;
     gap: 8px;
 }
@@ -201,7 +203,7 @@ header h1 {
     color: var(--text-soft);
 }
 
-.header-search button,
+.header-search>button,
 .view-details-button,
 .pagination a {
     padding: 8px 12px;
@@ -459,7 +461,7 @@ summary {
 
 .search-suggestions {
     display: none;
-
+    z-index: 2200;
     position: absolute;
 
     top: 100%;
@@ -494,11 +496,13 @@ summary {
     gap: 12px;
 
     padding: 10px;
+    background: var(--surface);
+    color: var(--text);
 
     border: none;
     border-bottom: 1px solid var(--border);
 
-    background-color: transparent;
+    background-color: var(--surface);
     color: var(--text);
 
     text-align: left;
@@ -507,7 +511,8 @@ summary {
 }
 
 .search-suggestion:hover {
-    background-color: var(--surface-soft);
+    background-color: var(--surface);
+    opacity: 1;
 }
 
 .search-suggestion img {
@@ -517,6 +522,17 @@ summary {
     object-fit: cover;
 
     border-radius: 50%;
+    background: linear-gradient(135deg,
+            var(--accent),
+            var(--accent-secondary));
+    color: white;
+}
+
+.search-suggestion:focus {
+    background: linear-gradient(135deg,
+            var(--accent),
+            var(--accent-secondary));
+    color: white;
 }
 
 .search-suggestion span {

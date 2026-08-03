@@ -6,8 +6,14 @@ import (
 	"groupie-tracker/internal"
 )
 
+var startServer = internal.StartServer
+
+func run() error {
+	return startServer()
+}
+
 func main() {
-	err := internal.StartServer()
+	err := run()
 	if err != nil {
 		fmt.Println("Server error:", err)
 	}

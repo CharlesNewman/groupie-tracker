@@ -48,7 +48,7 @@ func StartServer() error {
 	}
 
 	// Routes
-	mux := http.NewServeMux()
+	mux := SetupRoutes(artists, relations)
 
 	mux.HandleFunc("/", Handler(artists))
 	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))
@@ -72,4 +72,22 @@ func StartServer() error {
 	fmt.Println("Server running at http://localhost:" + port)
 
 	return http.ListenAndServe(":"+port, mux)
+}
+
+func SetupRoutes(artists []Artist, relations []Relation) *http.ServeMux {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", Handler(artists))
+	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))
+	mux.HandleFunc("/search", SearchHandler(artists))
+	mux.HandleFunc("/suggestions", SuggestionHandler(artists))
+	mux.HandleFunc("/artist-details", DetailsHandler(artists, relations))
+
+	fileServer := http.FileServer(http.Dir("static"))
+	mux.Handle(
+		"/static/",
+		http.StripPrefix("/static/", fileServer),
+	)
+
+	return mux
 }

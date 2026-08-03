@@ -47,21 +47,7 @@ func StartServer() error {
 		return fmt.Errorf("no dates received")
 	}
 
-	// Routes
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", Handler(artists))
-	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))
-	mux.HandleFunc("/search", SearchHandler(artists))
-	mux.HandleFunc("/suggestions", SuggestionHandler(artists))
-	mux.HandleFunc("/artist-details", DetailsHandler(artists, relations))
-
-	// Static files
-	fileServer := http.FileServer(http.Dir("static"))
-	mux.Handle(
-		"/static/",
-		http.StripPrefix("/static/", fileServer),
-	)
+	mux := SetupRoutes(artists, relations)
 
 	// Port
 	port := os.Getenv("PORT")

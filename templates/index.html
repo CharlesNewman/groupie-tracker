@@ -52,9 +52,15 @@
             </section>
             {{end}}
             {{if .Artists}}
-            <!-- artist cards here -->
+            <!-- artist cards -->
             {{else}}
-            <p class="no-results">No artists found.</p>
+            <div class="no-results-wrapper">
+                <section class="no-results">
+                    <h2>No artists found</h2>
+                    <p>Try another artist name.</p>
+                    <a href="/">Back to all artists</a>
+                </section>
+            </div>
             {{end}}
         </div>
     </main>

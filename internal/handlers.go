@@ -302,6 +302,30 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 		numberOfMembersMinText := r.URL.Query().Get("membersMin")
 		location := r.URL.Query().Get("location")
 
+		if creationMinText == "" {
+			creationMinText = "1900"
+		}
+
+		if creationMaxText == "" {
+			creationMaxText = "2026"
+		}
+
+		if firstAlbumMinText == "" {
+			firstAlbumMinText = "1900"
+		}
+
+		if firstAlbumMaxText == "" {
+			firstAlbumMaxText = "2026"
+		}
+
+		if numberOfMembersMinText == "" {
+			numberOfMembersMinText = "1"
+		}
+
+		if numberOfMembersMaxText == "" {
+			numberOfMembersMaxText = "20"
+		}
+
 		minYear, err := strconv.Atoi(creationMinText)
 		if err != nil {
 			ErrorHandler(w, "Invalid minimum year", http.StatusBadRequest)
@@ -350,7 +374,7 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 				}
 
 				for _, artistLocation := range locationData.Locations {
-					if artistLocation == location {
+					if strings.EqualFold(strings.TrimSpace(artistLocation), strings.TrimSpace(location)) {
 						matchesLocation = true
 						break
 					}

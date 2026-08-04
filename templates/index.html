@@ -12,12 +12,10 @@
 
 <body>
     <header>
-        <div class="site-logo">
-            <a href="/" class="site-logo">
-                <img src="/static/logo.png" alt="Groupie Tracker logo">
-                <h1>Groupie Tracker</h1>
-            </a>
-        </div>
+        <a href="/" class="site-logo">
+            <img src="/static/logo.png" alt="Groupie Tracker logo">
+            <h1>Groupie Tracker</h1>
+        </a>
 
         <div class="navigation-buttons">
             <nav>
@@ -36,99 +34,143 @@
         </button>
     </header>
 
-    <main>
-        <section class="filter-section">
-            <h2>Filter Artists</h2>
+    <main class="main-layout">
 
-            <form action="/filter" method="GET">
+        <aside class="filter-sidebar">
+            <section class="filter-section">
+                <h2>Filter Artists</h2>
 
-                <div class="filter-group">
-                    <label>Creation year</label>
+                <form id="filterForm" action="/filter" method="GET">
 
-                    <input type="number" name="creationMin" placeholder="From" value="1900">
+                    <div class="filter-group">
+                        <label>Creation year</label>
 
-                    <input type="number" name="creationMax" placeholder="To" value="2026">
-                </div>
+                        <input type="number" name="creationMin" value="1900" min="1900" max="2026"
+                            aria-label="Minimum creation year">
 
-                <div class="filter-group">
-                    <label>First album year</label>
+                        <input type="number" name="creationMax" value="2026" min="1900" max="2026"
+                            aria-label="Maximum creation year">
+                    </div>
 
-                    <input type="number" name="firstAlbumMin" placeholder="From" value="1900">
+                    <div class="filter-group">
+                        <label>First album year</label>
 
-                    <input type="number" name="firstAlbumMax" placeholder="To" value="2026">
-                </div>
+                        <input type="number" name="firstAlbumMin" value="1900" min="1900" max="2026"
+                            aria-label="Minimum first album year">
 
-                <div class="filter-group">
-                    <label>Number of members</label>
+                        <input type="number" name="firstAlbumMax" value="2026" min="1900" max="2026"
+                            aria-label="Maximum first album year">
+                    </div>
 
-                    <label>
-                        <input type="checkbox" name="members" value="1">
-                        1
-                    </label>
+                    <div class="filter-group">
+                        <label>Number of members</label>
 
-                    <label>
-                        <input type="checkbox" name="members" value="2">
-                        2
-                    </label>
+                        <label>
+                            <input type="checkbox" name="members" value="1">
+                            1
+                        </label>
 
-                    <label>
-                        <input type="checkbox" name="members" value="3">
-                        3
-                    </label>
+                        <label>
+                            <input type="checkbox" name="members" value="2">
+                            2
+                        </label>
 
-                    <label>
-                        <input type="checkbox" name="members" value="4">
-                        4
-                    </label>
+                        <label>
+                            <input type="checkbox" name="members" value="3">
+                            3
+                        </label>
 
-                    <label>
-                        <input type="checkbox" name="members" value="5">
-                        5
-                    </label>
+                        <label>
+                            <input type="checkbox" name="members" value="4">
+                            4
+                        </label>
 
-                    <label>
-                        <input type="checkbox" name="members" value="6">
-                        6
-                    </label>
-                </div>
+                        <label>
+                            <input type="checkbox" name="members" value="5">
+                            5
+                        </label>
 
-                <div class="filter-group">
-                    <label for="location">Concert location</label>
+                        <label>
+                            <input type="checkbox" name="members" value="6">
+                            6
+                        </label>
 
-                    <input id="location" type="text" name="location" placeholder="Example: texas-usa">
-                </div>
+                        <label>
+                            <input type="checkbox" name="members" value="7">
+                            7
+                        </label>
 
-                <button type="submit">Apply Filters</button>
+                        <label>
+                            <input type="checkbox" name="members" value="8">
+                            8
+                        </label>
+                    </div>
 
-                <a href="/">Reset Filters</a>
-            </form>
-        </section>
-        <div class="artist-grid">
-            {{range .Artists}}
-            <section class="artist-card">
-                <h2>{{.Name}}</h2>
+                    <div class="filter-group">
+                        <label for="location">Concert location</label>
 
-                <img src="{{.Image}}" alt="{{.Name}}">
+                        <select id="location" name="location">
+                            <option value="">All locations</option>
+                            <option value="texas-usa">Texas, USA</option>
+                            <option value="washington-usa">Washington, USA</option>
+                        </select>
+                    </div>
 
+                    <div class="filter-actions">
+                        <button type="submit">Apply Filters</button>
+                        <a href="/">Reset Filters</a>
+                    </div>
 
-                <button class="quick-view-button" data-artist-id="{{.ID}}" type="button">Quick View</button>
-                <a class="view-details-button" href="/artist-details?id={{.ID}}">
-                    View Details
-                </a>
+                </form>
             </section>
-            {{end}}
-            {{if .Artists}}
-            <!-- artist cards -->
-            {{else}}
-            <div class="no-results-wrapper">
-                <section class="no-results">
-                    <h2>No artists found</h2>
-                    <p>Try another artist name.</p>
-                    <a href="/">Back to all artists</a>
+        </aside>
+
+        <section class="artists-content" id="artistsContent">
+
+            <div class="artist-grid">
+                {{range .Artists}}
+                <section class="artist-card">
+                    <h2>{{.Name}}</h2>
+
+                    <img src="{{.Image}}" alt="{{.Name}}">
+
+                    <button class="quick-view-button" data-artist-id="{{.ID}}" type="button">
+                        Quick View
+                    </button>
+
+                    <a class="view-details-button" href="/artist-details?id={{.ID}}">
+                        View Details
+                    </a>
                 </section>
+                {{end}}
+
+                {{if .Artists}}
+                {{else}}
+                <div class="no-results-wrapper">
+                    <section class="no-results">
+                        <h2>No artists found</h2>
+                        <p>Try different filter values.</p>
+                        <a href="/">Back to all artists</a>
+                    </section>
+                </div>
+                {{end}}
+            </div>
+
+            {{if .Artists}}
+            <div class="pagination">
+                {{if .HasPrevious}}
+                <a href="#" class="page-link" data-page="{{.PreviousPage}}">Previous</a>
+                {{end}}
+
+                <span>Page {{.CurrentPage}}</span>
+
+                {{if .HasNext}}
+                <a href="#" class="page-link" data-page="{{.NextPage}}">Next</a>
+                {{end}}
             </div>
             {{end}}
-        </div>
+
+        </section>
     </main>
 
     <aside class="artist-panel">
@@ -142,6 +184,7 @@
                 <p class="panel-info">Artist information</p>
             </div>
         </div>
+
         <section class="panel-members-section">
             <h3>Members</h3>
             <div class="panel-members"></div>
@@ -153,25 +196,11 @@
         </section>
     </aside>
 
-    {{if .Artists}}
-    <div class="pagination">
-        {{if .HasPrevious}}
-        <a href="/?page={{.PreviousPage}}">Previous</a>
-        {{end}}
-
-        <span>Page {{.CurrentPage}}</span>
-
-        {{if .HasNext}}
-        <a href="/?page={{.NextPage}}">Next</a>
-        {{end}}
-    </div>
-    {{end}}
-
     <script src="/static/darkmode.js" defer></script>
     <script src="/static/sidepanel.js" defer></script>
     <script src="/static/search.js" defer></script>
     <script src="/static/background.js" defer></script>
-
+    <script src="/static/filter.js" defer></script>
 </body>
 
 </html>

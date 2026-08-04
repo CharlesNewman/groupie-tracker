@@ -405,14 +405,50 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 			}
 		}
 
+		pageSize := 12
+		currentPage := 1
+
+		pageText := r.URL.Query().Get("page")
+		if pageText != "" {
+			currentPage, err = strconv.Atoi(pageText)
+			if err != nil || currentPage < 1 {
+				ErrorHandler(w, "Invalid page number", http.StatusBadRequest)
+				return
+			}
+		}
+
+		maxPage := (len(filteredArtists) + pageSize - 1) / pageSize
+
+		if maxPage > 0 && currentPage > maxPage {
+			ErrorHandler(w, "Invalid page number", http.StatusNotFound)
+			return
+		}
+
+		start := (currentPage - 1) * pageSize
+		end := start + pageSize
+
+		if end > len(filteredArtists) {
+			end = len(filteredArtists)
+		}
+
+		previousPage := currentPage - 1
+		nextPage := currentPage + 1
+		hasPrevious := currentPage > 1
+		hasNext := end < len(filteredArtists)
+
 		tmpl, err := template.ParseFiles("templates/index.html")
 		if err != nil {
 			ErrorHandler(w, "Could not display request", http.StatusInternalServerError)
 			return
 		}
+
 		pageData := PageData{
-			Artists:     filteredArtists,
-			CurrentPage: 1,
+			Artists:      filteredArtists[start:end],
+			CurrentPage:  currentPage,
+			PreviousPage: previousPage,
+			NextPage:     nextPage,
+			HasPrevious:  hasPrevious,
+			HasNext:      hasNext,
 		}
 
 		err = tmpl.Execute(w, pageData)

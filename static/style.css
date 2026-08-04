@@ -1261,3 +1261,131 @@ body.dark-mode #map .leaflet-control-attribution a {
     content: "📍";
     margin-right: 8px;
 }
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 0 20px;
+    align-items: start;
+}
+
+.filter-sidebar {
+    position: sticky;
+    top: 20px;
+}
+
+.filter-section {
+    margin: 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ddd;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.filter-section h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.filter-section form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-group>label:first-child {
+    font-weight: bold;
+}
+
+.filter-group input[type="number"],
+.filter-group select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #bbb;
+    border-radius: 10px;
+    background: white;
+    font-size: 15px;
+}
+
+.filter-group label {
+    cursor: pointer;
+}
+
+.filter-group input[type="checkbox"] {
+    margin-right: 6px;
+    accent-color: #6f4bb8;
+}
+
+.filter-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-actions button,
+.filter-actions a {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.filter-actions button {
+    background: #6f4bb8;
+    color: white;
+}
+
+.filter-actions button:hover {
+    background: #835fd0;
+}
+
+.filter-actions a {
+    background: #e5e5e5;
+    color: #222;
+}
+
+.artists-content {
+    min-width: 0;
+}
+
+body.dark-mode .filter-section {
+    background: #242424;
+    color: white;
+    border-color: #444;
+}
+
+body.dark-mode .filter-group input,
+body.dark-mode .filter-group select {
+    background: #161616;
+    color: white;
+    border-color: #555;
+}
+
+body.dark-mode .filter-actions a {
+    background: #444;
+    color: white;
+}
+
+@media (max-width: 800px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-sidebar {
+        position: static;
+    }
+}

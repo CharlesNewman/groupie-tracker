@@ -1,6 +1,5 @@
 const artistPanel = document.querySelector(".artist-panel");
 const closePanelButton = document.querySelector(".close-panel");
-const quickViewButtons = document.querySelectorAll(".quick-view-button");
 
 const panelName = document.querySelector(".panel-name");
 const panelImage = document.querySelector(".panel-image");
@@ -8,8 +7,10 @@ const panelInfo = document.querySelector(".panel-info");
 const panelMembers = document.querySelector(".panel-members");
 const panelConcerts = document.querySelector(".panel-concerts");
 
-quickViewButtons.forEach(function (button) {
-    button.addEventListener("click", async function () {
+document.addEventListener("click", async function (event) {
+    const button = event.target.closest(".quick-view-button");
+
+    if (button) {
         const artistID = button.dataset.artistId;
 
         try {
@@ -27,7 +28,6 @@ quickViewButtons.forEach(function (button) {
             const concertCount = data.concertCount;
 
             panelName.textContent = artist.name;
-
             panelImage.src = artist.image;
             panelImage.alt = artist.name;
 
@@ -43,7 +43,6 @@ quickViewButtons.forEach(function (button) {
             artist.members.forEach(function (member) {
                 const memberItem = document.createElement("p");
                 memberItem.textContent = member;
-
                 panelMembers.appendChild(memberItem);
             });
 
@@ -90,7 +89,14 @@ quickViewButtons.forEach(function (button) {
         } catch (error) {
             console.error(error);
         }
-    });
+
+        return;
+    }
+
+    if (!artistPanel.contains(event.target)) {
+        artistPanel.classList.remove("open");
+        document.body.classList.remove("panel-open");
+    }
 });
 
 function formatLocation(location) {
@@ -119,17 +125,4 @@ function formatLocation(location) {
 closePanelButton.addEventListener("click", function () {
     artistPanel.classList.remove("open");
     document.body.classList.remove("panel-open");
-});
-
-document.addEventListener("click", function (event) {
-    const clickedInsidePanel =
-        artistPanel.contains(event.target);
-
-    const clickedQuickViewButton =
-        event.target.closest(".quick-view-button");
-
-    if (!clickedInsidePanel && !clickedQuickViewButton) {
-        artistPanel.classList.remove("open");
-        document.body.classList.remove("panel-open");
-    }
 });

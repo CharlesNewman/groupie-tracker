@@ -37,6 +37,72 @@
     </header>
 
     <main>
+        <section class="filter-section">
+            <h2>Filter Artists</h2>
+
+            <form action="/filter" method="GET">
+
+                <div class="filter-group">
+                    <label>Creation year</label>
+
+                    <input type="number" name="creationMin" placeholder="From" value="1900">
+
+                    <input type="number" name="creationMax" placeholder="To" value="2026">
+                </div>
+
+                <div class="filter-group">
+                    <label>First album year</label>
+
+                    <input type="number" name="firstAlbumMin" placeholder="From" value="1900">
+
+                    <input type="number" name="firstAlbumMax" placeholder="To" value="2026">
+                </div>
+
+                <div class="filter-group">
+                    <label>Number of members</label>
+
+                    <label>
+                        <input type="checkbox" name="members" value="1">
+                        1
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="members" value="2">
+                        2
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="members" value="3">
+                        3
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="members" value="4">
+                        4
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="members" value="5">
+                        5
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="members" value="6">
+                        6
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <label for="location">Concert location</label>
+
+                    <input id="location" type="text" name="location" placeholder="Example: texas-usa">
+                </div>
+
+                <button type="submit">Apply Filters</button>
+
+                <a href="/">Reset Filters</a>
+            </form>
+        </section>
         <div class="artist-grid">
             {{range .Artists}}
             <section class="artist-card">

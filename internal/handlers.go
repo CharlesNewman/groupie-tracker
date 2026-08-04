@@ -298,8 +298,7 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 		creationMaxText := r.URL.Query().Get("creationMax")
 		firstAlbumMinText := r.URL.Query().Get("firstAlbumMin")
 		firstAlbumMaxText := r.URL.Query().Get("firstAlbumMax")
-		numberOfMembersMaxText := r.URL.Query().Get("membersMax")
-		numberOfMembersMinText := r.URL.Query().Get("membersMin")
+		selectedMembersText := r.URL.Query()["members"]
 		location := r.URL.Query().Get("location")
 
 		if creationMinText == "" {
@@ -316,14 +315,6 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 
 		if firstAlbumMaxText == "" {
 			firstAlbumMaxText = "2026"
-		}
-
-		if numberOfMembersMinText == "" {
-			numberOfMembersMinText = "1"
-		}
-
-		if numberOfMembersMaxText == "" {
-			numberOfMembersMaxText = "20"
 		}
 
 		minYear, err := strconv.Atoi(creationMinText)
@@ -350,29 +341,39 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 			return
 		}
 
-		membersMaxNum, err := strconv.Atoi(numberOfMembersMaxText)
-		if err != nil {
-			ErrorHandler(w, "Invalid number of Members", http.StatusBadRequest)
-			return
-		}
+		var selectedMembers []int
 
-		membersMinNum, err := strconv.Atoi(numberOfMembersMinText)
-		if err != nil {
-			ErrorHandler(w, "Invalid number of Members", http.StatusBadRequest)
-			return
+		for i := 0; i < len(selectedMembersText); i++ {
+			memberNumber, err := strconv.Atoi(selectedMembersText[i])
+			if err != nil {
+				ErrorHandler(w, "Invalid number of Members", http.StatusBadRequest)
+				return
+			}
+
+			selectedMembers = append(selectedMembers, memberNumber)
 		}
 
 		var filteredArtists []Artist
 
 		for _, artist := range artists {
-
+			// when location is empty, accept every artist
+			// when location has text, only accept matching artists
 			matchesLocation := location == ""
+			matchesMembers := false
 
+			if len(selectedMembers) == 0 {
+				matchesMembers = true
+			}
+			for _, selected := range selectedMembers {
+				if len(artist.Members) == selected {
+					matchesMembers = true
+					break
+				}
+			}
 			for _, locationData := range locations {
 				if artist.ID != locationData.ID {
 					continue
 				}
-
 				for _, artistLocation := range locationData.Locations {
 					if strings.EqualFold(strings.TrimSpace(artistLocation), strings.TrimSpace(location)) {
 						matchesLocation = true
@@ -398,9 +399,8 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 				artist.CreationDate <= maxYear &&
 				intResult >= albumMinYear &&
 				intResult <= albumMaxYear &&
-				len(artist.Members) >= membersMinNum &&
-				len(artist.Members) <= membersMaxNum &&
-				matchesLocation {
+				matchesLocation &&
+				matchesMembers {
 				filteredArtists = append(filteredArtists, artist)
 			}
 		}

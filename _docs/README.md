@@ -1,9 +1,8 @@
 <h1 align="center">Groupie Tracker</h1>
 
 <p align="center">
-  <img src="_docs/icon.png" alt="Groupie Tracker logo" width="220">
+  <img src="icon.png" alt="Groupie Tracker logo" width="220">
 </p>
-
 <p align="center">
     <a href="https://go.dev/dl/"><img src="https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go Version" /></a>
     <img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge" alt="Build Status" />

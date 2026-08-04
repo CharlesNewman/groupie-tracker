@@ -1547,3 +1547,32 @@ body.dark-mode #map .leaflet-control-attribution a {
     font-size: 13px;
     font-weight: bold;
 }
+
+.at-least-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.at-least-option span {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+
+    background-color: var(--surface-soft);
+    color: var(--accent);
+
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+}
+
+.at-least-option input:checked+span {
+    background: var(--button-bg);
+    color: var(--button-text);
+    border-color: transparent;
+}

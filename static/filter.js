@@ -45,3 +45,50 @@ document.addEventListener("click", function (event) {
     const page = pageLink.dataset.page;
     loadFilteredArtists(page);
 });
+const atLeastMembers = document.getElementById("atLeastMembers");
+const memberInputs = document.querySelectorAll(
+    '.member-option input[name="members"]'
+);
+
+memberInputs.forEach(function (input) {
+    input.addEventListener("change", function () {
+        if (!atLeastMembers.checked || !input.checked) {
+            return;
+        }
+
+        const selectedNumber = Number(input.value);
+
+        memberInputs.forEach(function (memberInput) {
+            const memberNumber = Number(memberInput.value);
+
+            memberInput.checked = memberNumber >= selectedNumber;
+        });
+    });
+});
+
+atLeastMembers.addEventListener("change", function () {
+    if (!atLeastMembers.checked) {
+        memberInputs.forEach(function (input) {
+            input.checked = false;
+        });
+
+        return;
+    }
+
+    let selectedNumber = null;
+
+    memberInputs.forEach(function (input) {
+        if (input.checked) {
+            selectedNumber = Number(input.value);
+        }
+    });
+
+    if (selectedNumber === null) {
+        return;
+    }
+
+    memberInputs.forEach(function (input) {
+        const memberNumber = Number(input.value);
+        input.checked = memberNumber >= selectedNumber;
+    });
+});

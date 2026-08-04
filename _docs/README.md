@@ -197,10 +197,12 @@ go build -o groupie-tracker ./cmd
 # Run the compiled application
 ./groupie-tracker
 ```
-
 ---
 
-## 📝 Author
+## 🌐 The site is live on: [Open Groupie Tracker](https://groupie-tracker-xmy3.onrender.com/)
+
+
+## 📝 Authors
 
 **Charles Newman** | cnewman | Cohort 2.3 | Zone01 Athens
 **Pavlos Avgerinos** | pavgerin | Cohort 2.3 | Zone01 Athens

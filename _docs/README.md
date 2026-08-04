@@ -203,7 +203,8 @@ go build -o groupie-tracker ./cmd
 ## 📝 Author
 
 **Charles Newman** | cnewman | Cohort 2.3 | Zone01 Athens
-
+**Pavlos Avgerinos** | pavgerin | Cohort 2.3 | Zone01 Athens
+**Nikos Antoniou** | nantoniou | Cohort 2.3 | Zone01 Athens
 ---
 
 ## 📄 License

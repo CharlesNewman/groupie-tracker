@@ -63,7 +63,7 @@ func StartServer() error {
 func SetupRoutes(artists []Artist, relations []Relation, locations []Location, dates []Date) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", Handler(artists))
+	mux.HandleFunc("/", Handler(artists, locations))
 	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations, locations, dates))
 	mux.HandleFunc("/search", SearchHandler(artists))
 	mux.HandleFunc("/suggestions", SuggestionHandler(artists))

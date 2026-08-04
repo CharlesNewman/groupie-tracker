@@ -47,6 +47,7 @@ type PageData struct {
 	NextPage     int
 	HasPrevious  bool
 	HasNext      bool
+	LocationList []string
 }
 
 type Find struct {

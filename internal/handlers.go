@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Handler(artists []Artist) http.HandlerFunc {
+func Handler(artists []Artist, locations []Location) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		if r.URL.Path != "/" {
@@ -21,7 +21,9 @@ func Handler(artists []Artist) http.HandlerFunc {
 			return
 		}
 
-		tmpl, err := template.ParseFiles("templates/index.html")
+		tmpl, err := template.New("index.html").
+			Funcs(indexFuncMap()).
+			ParseFiles("templates/index.html")
 		if err != nil {
 			ErrorHandler(w, "Template Error", http.StatusInternalServerError)
 			return
@@ -46,6 +48,19 @@ func Handler(artists []Artist) http.HandlerFunc {
 				currentPage = pageNumber
 			}
 		}
+		theListOfLocations := []string{}
+		seenLocations := make(map[string]bool)
+
+		for i := 0; i < len(locations); i++ {
+			location := locations[i]
+			for j := 0; j < len(location.Locations); j++ {
+				if seenLocations[location.Locations[j]] {
+					continue
+				}
+				seenLocations[location.Locations[j]] = true
+				theListOfLocations = append(theListOfLocations, location.Locations[j])
+			}
+		}
 
 		start := (currentPage - 1) * pageSize
 		end := start + pageSize
@@ -65,6 +80,7 @@ func Handler(artists []Artist) http.HandlerFunc {
 			NextPage:     NextPage,
 			HasPrevious:  HasPrevious,
 			HasNext:      HasNext,
+			LocationList: theListOfLocations,
 		}
 
 		err = tmpl.Execute(w, pageData)
@@ -101,7 +117,9 @@ func SearchHandler(artists []Artist) http.HandlerFunc {
 			Artists:     matches,
 			CurrentPage: 1,
 		}
-		tmpl, err := template.ParseFiles("templates/index.html")
+		tmpl, err := template.New("index.html").
+			Funcs(indexFuncMap()).
+			ParseFiles("templates/index.html")
 		if err != nil {
 			ErrorHandler(w, "Could not display request", http.StatusInternalServerError)
 			return
@@ -259,19 +277,8 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 			Relation: FoundRelation,
 		}
 
-		funcMap := template.FuncMap{
-			"formatLocation": func(location string) string {
-				location = strings.ReplaceAll(location, "_", " ")
-				location = strings.ReplaceAll(location, "-", " ")
-				location = strings.Title(location)
-				location = strings.ReplaceAll(location, "Usa", "USA")
-				location = strings.ReplaceAll(location, "Uk", "UK")
-				return location
-			},
-		}
-
 		tmpl, err := template.New("artist-details.html").
-			Funcs(funcMap).
+			Funcs(indexFuncMap()).
 			ParseFiles("templates/artist-details.html")
 
 		if err != nil {
@@ -436,7 +443,23 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 		hasPrevious := currentPage > 1
 		hasNext := end < len(filteredArtists)
 
-		tmpl, err := template.ParseFiles("templates/index.html")
+		theListOfLocations := []string{}
+		seenLocations := make(map[string]bool)
+
+		for i := 0; i < len(locations); i++ {
+			location := locations[i]
+			for j := 0; j < len(location.Locations); j++ {
+				if seenLocations[location.Locations[j]] {
+					continue
+				}
+				seenLocations[location.Locations[j]] = true
+				theListOfLocations = append(theListOfLocations, location.Locations[j])
+			}
+		}
+
+		tmpl, err := template.New("index.html").
+			Funcs(indexFuncMap()).
+			ParseFiles("templates/index.html")
 		if err != nil {
 			ErrorHandler(w, "Could not display request", http.StatusInternalServerError)
 			return
@@ -449,6 +472,7 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 			NextPage:     nextPage,
 			HasPrevious:  hasPrevious,
 			HasNext:      hasNext,
+			LocationList: theListOfLocations,
 		}
 
 		err = tmpl.Execute(w, pageData)
@@ -482,5 +506,18 @@ func ErrorHandler(w http.ResponseWriter, message string, statusCode int) {
 	if err != nil {
 		http.Error(w, "Could not display error page", http.StatusInternalServerError)
 		return
+	}
+}
+
+func indexFuncMap() template.FuncMap {
+	return template.FuncMap{
+		"formatLocation": func(location string) string {
+			location = strings.ReplaceAll(location, "_", " ")
+			location = strings.ReplaceAll(location, "-", " ")
+			location = strings.Title(location)
+			location = strings.ReplaceAll(location, "Usa", "USA")
+			location = strings.ReplaceAll(location, "Uk", "UK")
+			return location
+		},
 	}
 }

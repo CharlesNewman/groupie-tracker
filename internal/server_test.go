@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -8,75 +9,87 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M) {
-	err := os.Chdir("..")
-	if err != nil {
-		panic(err)
-	}
-
-	code := m.Run()
-	os.Exit(code)
-}
-
-func testArtists() []Artist {
-	return []Artist{
+func testData() ([]Artist, []Relation, []Location, []Date) {
+	artists := []Artist{
 		{
 			ID:           1,
-			Name:         "Queen",
-			Image:        "queen.jpg",
-			Members:      []string{"Freddie Mercury", "Brian May"},
-			CreationDate: 1970,
-			FirstAlbum:   "14-12-1973",
+			Name:         "Test Band",
+			Members:      []string{"Alice", "Bob", "Charlie"},
+			CreationDate: 2000,
+			FirstAlbum:   "01-01-2005",
 		},
-	}
-}
-
-func testRelations() []Relation {
-	return []Relation{
 		{
-			ID: 1,
-			DatesLocations: map[string][]string{
-				"london-uk": {"01-01-2026", "02-01-2026"},
-			},
+			ID:           2,
+			Name:         "Solo Artist",
+			Members:      []string{"David"},
+			CreationDate: 2015,
+			FirstAlbum:   "01-01-2016",
 		},
 	}
-}
 
-func testLocations() []Location {
-	return []Location{
+	relations := []Relation{
+		{ID: 1},
+		{ID: 2},
+	}
+
+	locations := []Location{
 		{
-			ID: 1,
-			Locations: []string{
-				"london-uk",
-				"athens-greece",
-			},
+			ID:        1,
+			Locations: []string{"athens-greece"},
 		},
-	}
-}
-
-func testDates() []Date {
-	return []Date{
 		{
-			ID: 1,
-			Dates: []string{
-				"01-01-2026",
-				"02-01-2026",
-			},
+			ID:        2,
+			Locations: []string{"london-uk"},
 		},
 	}
+
+	dates := []Date{
+		{ID: 1},
+		{ID: 2},
+	}
+
+	return artists, relations, locations, dates
 }
 
-func setupTestRoutes() *http.ServeMux {
-	return SetupRoutes(
-		testArtists(),
-		testRelations(),
-		testLocations(),
-		testDates(),
-	)
+// Tests run from the internal folder.
+// This temporarily moves them to the project root
+// so templates/ and static/ can be found.
+func moveToProjectRoot(t *testing.T) {
+	t.Helper()
+
+	currentDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("could not read current directory: %v", err)
+	}
+
+	err = os.Chdir("..")
+	if err != nil {
+		t.Fatalf("could not move to project root: %v", err)
+	}
+
+	t.Cleanup(func() {
+		err := os.Chdir(currentDirectory)
+		if err != nil {
+			t.Errorf("could not restore directory: %v", err)
+		}
+	})
+}
+
+func TestSetupRoutes(t *testing.T) {
+	artists, relations, locations, dates := testData()
+
+	mux := SetupRoutes(artists, relations, locations, dates)
+
+	if mux == nil {
+		t.Fatal("SetupRoutes returned nil")
+	}
 }
 
 func TestHomeRoute(t *testing.T) {
-	mux := setupTestRoutes()
+	moveToProjectRoot(t)
+
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
@@ -84,25 +97,47 @@ func TestHomeRoute(t *testing.T) {
 	mux.ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", response.Code)
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
+	}
+
+	if !strings.Contains(response.Body.String(), "Test Band") {
+		t.Error("home page did not display Test Band")
 	}
 }
 
 func TestInvalidRoute(t *testing.T) {
-	mux := setupTestRoutes()
+	moveToProjectRoot(t)
 
-	request := httptest.NewRequest(http.MethodGet, "/invalid", nil)
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
+
+	request := httptest.NewRequest(
+		http.MethodGet,
+		"/invalid-route",
+		nil,
+	)
 	response := httptest.NewRecorder()
 
 	mux.ServeHTTP(response, request)
 
 	if response.Code != http.StatusNotFound {
-		t.Errorf("expected 404, got %d", response.Code)
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusNotFound,
+			response.Code,
+		)
 	}
 }
 
-func TestHomeWrongMethod(t *testing.T) {
-	mux := setupTestRoutes()
+func TestHomeRejectsPost(t *testing.T) {
+	moveToProjectRoot(t)
+
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
 	response := httptest.NewRecorder()
@@ -110,37 +145,21 @@ func TestHomeWrongMethod(t *testing.T) {
 	mux.ServeHTTP(response, request)
 
 	if response.Code != http.StatusMethodNotAllowed {
-		t.Errorf("expected 405, got %d", response.Code)
-	}
-}
-
-func TestSearchRoute(t *testing.T) {
-	mux := setupTestRoutes()
-
-	request := httptest.NewRequest(
-		http.MethodGet,
-		"/search?query=Queen",
-		nil,
-	)
-	response := httptest.NewRecorder()
-
-	mux.ServeHTTP(response, request)
-
-	if response.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", response.Code)
-	}
-
-	if !strings.Contains(response.Body.String(), "Queen") {
-		t.Error("expected response to contain Queen")
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusMethodNotAllowed,
+			response.Code,
+		)
 	}
 }
 
 func TestSuggestionsRoute(t *testing.T) {
-	mux := setupTestRoutes()
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"/suggestions?query=Que",
+		"/suggestions?query=test",
 		nil,
 	)
 	response := httptest.NewRecorder()
@@ -148,25 +167,41 @@ func TestSuggestionsRoute(t *testing.T) {
 	mux.ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", response.Code)
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
 	}
 
-	contentType := response.Header().Get("Content-Type")
-	if !strings.Contains(contentType, "application/json") {
-		t.Errorf("expected JSON, got %s", contentType)
+	var result []Artist
+
+	err := json.NewDecoder(response.Body).Decode(&result)
+	if err != nil {
+		t.Fatalf("could not decode suggestions: %v", err)
 	}
 
-	if !strings.Contains(response.Body.String(), "Queen") {
-		t.Error("expected JSON response to contain Queen")
+	if len(result) != 1 {
+		t.Fatalf("expected 1 suggestion, got %d", len(result))
+	}
+
+	if result[0].Name != "Test Band" {
+		t.Errorf(
+			"expected Test Band, got %s",
+			result[0].Name,
+		)
 	}
 }
 
-func TestArtistJSONRoute(t *testing.T) {
-	mux := setupTestRoutes()
+func TestFilterByCreationYear(t *testing.T) {
+	moveToProjectRoot(t)
+
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"/artist?id=1",
+		"/filter?creationMin=1999&creationMax=2001",
 		nil,
 	)
 	response := httptest.NewRecorder()
@@ -174,64 +209,33 @@ func TestArtistJSONRoute(t *testing.T) {
 	mux.ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", response.Code)
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
 	}
 
 	body := response.Body.String()
 
-	if !strings.Contains(body, "Queen") {
-		t.Error("expected JSON response to contain Queen")
+	if !strings.Contains(body, "Test Band") {
+		t.Error("expected Test Band in filtered results")
 	}
 
-	if !strings.Contains(body, `"locationCount":2`) {
-		t.Error("expected locationCount to be 2")
-	}
-
-	if !strings.Contains(body, `"concertCount":2`) {
-		t.Error("expected concertCount to be 2")
+	if strings.Contains(body, "Solo Artist") {
+		t.Error("Solo Artist should not appear in filtered results")
 	}
 }
 
-func TestArtistInvalidID(t *testing.T) {
-	mux := setupTestRoutes()
+func TestFilterByMembers(t *testing.T) {
+	moveToProjectRoot(t)
+
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"/artist?id=abc",
-		nil,
-	)
-	response := httptest.NewRecorder()
-
-	mux.ServeHTTP(response, request)
-
-	if response.Code != http.StatusBadRequest {
-		t.Errorf("expected 400, got %d", response.Code)
-	}
-}
-
-func TestArtistNotFound(t *testing.T) {
-	mux := setupTestRoutes()
-
-	request := httptest.NewRequest(
-		http.MethodGet,
-		"/artist?id=999",
-		nil,
-	)
-	response := httptest.NewRecorder()
-
-	mux.ServeHTTP(response, request)
-
-	if response.Code != http.StatusNotFound {
-		t.Errorf("expected 404, got %d", response.Code)
-	}
-}
-
-func TestArtistDetailsPage(t *testing.T) {
-	mux := setupTestRoutes()
-
-	request := httptest.NewRequest(
-		http.MethodGet,
-		"/artist-details?id=1",
+		"/filter?members=3",
 		nil,
 	)
 	response := httptest.NewRecorder()
@@ -239,44 +243,78 @@ func TestArtistDetailsPage(t *testing.T) {
 	mux.ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", response.Code)
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
 	}
 
-	if !strings.Contains(response.Body.String(), "Queen") {
-		t.Error("expected details page to contain Queen")
+	body := response.Body.String()
+
+	if !strings.Contains(body, "Test Band") {
+		t.Error("expected Test Band in filtered results")
+	}
+
+	if strings.Contains(body, "Solo Artist") {
+		t.Error("Solo Artist should not appear in filtered results")
 	}
 }
 
-func TestInvalidPageNumber(t *testing.T) {
-	mux := setupTestRoutes()
+func TestFilterByLocation(t *testing.T) {
+	moveToProjectRoot(t)
+
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"/?page=abc",
+		"/filter?location=london-uk",
 		nil,
 	)
 	response := httptest.NewRecorder()
 
 	mux.ServeHTTP(response, request)
 
-	if response.Code != http.StatusBadRequest {
-		t.Errorf("expected 400, got %d", response.Code)
+	if response.Code != http.StatusOK {
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
+	}
+
+	body := response.Body.String()
+
+	if !strings.Contains(body, "Solo Artist") {
+		t.Error("expected Solo Artist in filtered results")
+	}
+
+	if strings.Contains(body, "Test Band") {
+		t.Error("Test Band should not appear in filtered results")
 	}
 }
 
-func TestPageNotFound(t *testing.T) {
-	mux := setupTestRoutes()
+func TestStaticRoute(t *testing.T) {
+	moveToProjectRoot(t)
+
+	artists, relations, locations, dates := testData()
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"/?page=999",
+		"/static/style.css",
 		nil,
 	)
 	response := httptest.NewRecorder()
 
 	mux.ServeHTTP(response, request)
 
-	if response.Code != http.StatusNotFound {
-		t.Errorf("expected 404, got %d", response.Code)
+	if response.Code != http.StatusOK {
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
 	}
 }

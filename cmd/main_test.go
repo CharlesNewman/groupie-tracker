@@ -7,26 +7,23 @@ import (
 
 func TestRunSuccess(t *testing.T) {
 	originalStartServer := startServer
-	defer func() {
-		startServer = originalStartServer
-	}()
 
 	startServer = func() error {
 		return nil
 	}
 
-	err := run()
+	t.Cleanup(func() {
+		startServer = originalStartServer
+	})
 
+	err := run()
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
 }
 
-func TestRunServerError(t *testing.T) {
+func TestRunReturnsServerError(t *testing.T) {
 	originalStartServer := startServer
-	defer func() {
-		startServer = originalStartServer
-	}()
 
 	expectedError := errors.New("test server error")
 
@@ -34,9 +31,17 @@ func TestRunServerError(t *testing.T) {
 		return expectedError
 	}
 
+	t.Cleanup(func() {
+		startServer = originalStartServer
+	})
+
 	err := run()
 
 	if !errors.Is(err, expectedError) {
-		t.Errorf("expected %v, got %v", expectedError, err)
+		t.Errorf(
+			"expected error %v, got %v",
+			expectedError,
+			err,
+		)
 	}
 }

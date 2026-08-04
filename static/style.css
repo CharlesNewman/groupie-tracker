@@ -1164,3 +1164,100 @@ body.dark-mode #map .leaflet-control-attribution a {
     background: var(--button-bg);
     color: var(--button-text);
 }
+
+.panel-concert-section {
+    margin: 18px 0;
+    padding: 14px;
+
+    background-color: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.panel-concert-section h3 {
+    margin-top: 0;
+}
+
+.concert-statistic {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 16px;
+    padding: 18px;
+
+    background: linear-gradient(135deg,
+            var(--accent),
+            var(--accent-secondary));
+
+    color: white;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 8px 20px var(--shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.concert-statistic-number {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.concert-statistic-label {
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+.location-dropdown {
+    margin: 0;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+}
+
+.location-dropdown summary {
+    padding: 12px 14px;
+
+    background-color: var(--surface);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.location-dropdown[open] summary {
+    border-color: var(--accent);
+}
+
+.panel-location-list {
+    display: grid;
+    gap: 8px;
+
+    margin-top: 10px;
+}
+
+.panel-location-item {
+    margin: 0;
+    padding: 10px 12px;
+
+    background-color: var(--surface);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    text-align: left;
+}
+
+.panel-location-item::before {
+    content: "📍";
+    margin-right: 8px;
+}

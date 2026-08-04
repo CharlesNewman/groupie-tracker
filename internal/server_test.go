@@ -36,14 +36,47 @@ func testRelations() []Relation {
 		{
 			ID: 1,
 			DatesLocations: map[string][]string{
-				"london-uk": {"01-01-2026"},
+				"london-uk": {"01-01-2026", "02-01-2026"},
 			},
 		},
 	}
 }
 
+func testLocations() []Location {
+	return []Location{
+		{
+			ID: 1,
+			Locations: []string{
+				"london-uk",
+				"athens-greece",
+			},
+		},
+	}
+}
+
+func testDates() []Date {
+	return []Date{
+		{
+			ID: 1,
+			Dates: []string{
+				"01-01-2026",
+				"02-01-2026",
+			},
+		},
+	}
+}
+
+func setupTestRoutes() *http.ServeMux {
+	return SetupRoutes(
+		testArtists(),
+		testRelations(),
+		testLocations(),
+		testDates(),
+	)
+}
+
 func TestHomeRoute(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
@@ -56,7 +89,7 @@ func TestHomeRoute(t *testing.T) {
 }
 
 func TestInvalidRoute(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(http.MethodGet, "/invalid", nil)
 	response := httptest.NewRecorder()
@@ -69,7 +102,7 @@ func TestInvalidRoute(t *testing.T) {
 }
 
 func TestHomeWrongMethod(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
 	response := httptest.NewRecorder()
@@ -82,7 +115,7 @@ func TestHomeWrongMethod(t *testing.T) {
 }
 
 func TestSearchRoute(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -103,7 +136,7 @@ func TestSearchRoute(t *testing.T) {
 }
 
 func TestSuggestionsRoute(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -129,7 +162,7 @@ func TestSuggestionsRoute(t *testing.T) {
 }
 
 func TestArtistJSONRoute(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -144,13 +177,23 @@ func TestArtistJSONRoute(t *testing.T) {
 		t.Errorf("expected 200, got %d", response.Code)
 	}
 
-	if !strings.Contains(response.Body.String(), "Queen") {
+	body := response.Body.String()
+
+	if !strings.Contains(body, "Queen") {
 		t.Error("expected JSON response to contain Queen")
+	}
+
+	if !strings.Contains(body, `"locationCount":2`) {
+		t.Error("expected locationCount to be 2")
+	}
+
+	if !strings.Contains(body, `"concertCount":2`) {
+		t.Error("expected concertCount to be 2")
 	}
 }
 
 func TestArtistInvalidID(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -167,7 +210,7 @@ func TestArtistInvalidID(t *testing.T) {
 }
 
 func TestArtistNotFound(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -184,7 +227,7 @@ func TestArtistNotFound(t *testing.T) {
 }
 
 func TestArtistDetailsPage(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -205,7 +248,7 @@ func TestArtistDetailsPage(t *testing.T) {
 }
 
 func TestInvalidPageNumber(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -222,7 +265,7 @@ func TestInvalidPageNumber(t *testing.T) {
 }
 
 func TestPageNotFound(t *testing.T) {
-	mux := SetupRoutes(testArtists(), testRelations())
+	mux := setupTestRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,

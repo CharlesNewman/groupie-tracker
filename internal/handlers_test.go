@@ -7,7 +7,12 @@ import (
 )
 
 func TestArtistDetailsBadRequest(t *testing.T) {
-	handler := ArtistDetailsHandler([]Artist{}, []Relation{})
+	handler := ArtistDetailsHandler(
+		[]Artist{},
+		[]Relation{},
+		[]Location{},
+		[]Date{},
+	)
 
 	request := httptest.NewRequest(http.MethodGet, "/artist?id=abc", nil)
 	response := httptest.NewRecorder()
@@ -20,7 +25,12 @@ func TestArtistDetailsBadRequest(t *testing.T) {
 }
 
 func TestArtistDetailsNotFound(t *testing.T) {
-	handler := ArtistDetailsHandler([]Artist{}, []Relation{})
+	handler := ArtistDetailsHandler(
+		[]Artist{},
+		[]Relation{},
+		[]Location{},
+		[]Date{},
+	)
 
 	request := httptest.NewRequest(http.MethodGet, "/artist?id=999", nil)
 	response := httptest.NewRecorder()
@@ -33,7 +43,12 @@ func TestArtistDetailsNotFound(t *testing.T) {
 }
 
 func TestArtistDetailsMethodNotAllowed(t *testing.T) {
-	handler := ArtistDetailsHandler([]Artist{}, []Relation{})
+	handler := ArtistDetailsHandler(
+		[]Artist{},
+		[]Relation{},
+		[]Location{},
+		[]Date{},
+	)
 
 	request := httptest.NewRequest(http.MethodPost, "/artist?id=1", nil)
 	response := httptest.NewRecorder()

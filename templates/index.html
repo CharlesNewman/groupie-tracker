@@ -81,12 +81,13 @@
             <div class="panel-members"></div>
         </section>
 
-        <details>
-            <summary>Concert Dates</summary>
+        <section class="panel-concert-section">
+            <h3>Tour Overview</h3>
             <div class="panel-concerts"></div>
-        </details>
+        </section>
     </aside>
 
+    {{if .Artists}}
     <div class="pagination">
         {{if .HasPrevious}}
         <a href="/?page={{.PreviousPage}}">Previous</a>
@@ -98,6 +99,7 @@
         <a href="/?page={{.NextPage}}">Next</a>
         {{end}}
     </div>
+    {{end}}
 
     <script src="/static/darkmode.js"></script>
     <script src="/static/sidepanel.js"></script>

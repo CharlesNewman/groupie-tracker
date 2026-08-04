@@ -144,7 +144,7 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 	}
 }
 
-func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
+func ArtistDetailsHandler(artists []Artist, relations []Relation, locations []Location, dates []Date) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		//The errors work with javascript here as well thats why we use http.Error instead the ErrorHandler
@@ -162,6 +162,8 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 		}
 		var FoundArtist Artist
 		var FoundRelation Relation
+		var locationCount int
+		var concertCount int
 
 		for i := 0; i < len(artists); i++ {
 			artist := artists[i]
@@ -177,13 +179,34 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation) http.HandlerFu
 				break
 			}
 		}
+
+		for i := 0; i < len(locations); i++ {
+			location := locations[i]
+
+			if location.ID == idInt {
+				locationCount = len(location.Locations)
+				break
+			}
+		}
+
+		for i := 0; i < len(dates); i++ {
+			date := dates[i]
+
+			if date.ID == idInt {
+				concertCount = len(date.Dates)
+				break
+			}
+		}
+
 		if FoundArtist.ID == 0 || FoundRelation.ID == 0 {
 			http.Error(w, "Mismatch Artist ID", http.StatusNotFound)
 			return
 		}
 		result := Find{
-			Artist:   FoundArtist,
-			Relation: FoundRelation,
+			Artist:        FoundArtist,
+			Relation:      FoundRelation,
+			ConcertCount:  concertCount,
+			LocationCount: locationCount,
 		}
 
 		w.Header().Set("Content-Type", "application/json")

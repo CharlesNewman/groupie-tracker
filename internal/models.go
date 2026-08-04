@@ -50,6 +50,8 @@ type PageData struct {
 }
 
 type Find struct {
-	Artist   Artist   `json:"artist"`
-	Relation Relation `json:"relation"`
+	Artist        Artist   `json:"artist"`
+	Relation      Relation `json:"relation"`
+	LocationCount int      `json:"locationCount"`
+	ConcertCount  int      `json:"concertCount"`
 }

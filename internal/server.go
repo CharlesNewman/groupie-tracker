@@ -47,7 +47,7 @@ func StartServer() error {
 		return fmt.Errorf("no dates received")
 	}
 
-	mux := SetupRoutes(artists, relations)
+	mux := SetupRoutes(artists, relations, locations, dates)
 
 	// Port
 	port := os.Getenv("PORT")
@@ -60,11 +60,11 @@ func StartServer() error {
 	return http.ListenAndServe(":"+port, mux)
 }
 
-func SetupRoutes(artists []Artist, relations []Relation) *http.ServeMux {
+func SetupRoutes(artists []Artist, relations []Relation, locations []Location, dates []Date) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", Handler(artists))
-	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations))
+	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations, locations, dates))
 	mux.HandleFunc("/search", SearchHandler(artists))
 	mux.HandleFunc("/suggestions", SuggestionHandler(artists))
 	mux.HandleFunc("/artist-details", DetailsHandler(artists, relations))

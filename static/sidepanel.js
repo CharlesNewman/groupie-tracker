@@ -21,8 +21,10 @@ quickViewButtons.forEach(function (button) {
 
             const data = await response.json();
 
-            const artist = data.artist || data.Artist;
-            const relation = data.relation || data.Relation;
+            const artist = data.artist;
+            const relation = data.relation;
+            const locationCount = data.locationCount;
+            const concertCount = data.concertCount;
 
             panelName.textContent = artist.name;
 
@@ -30,8 +32,10 @@ quickViewButtons.forEach(function (button) {
             panelImage.alt = artist.name;
 
             panelInfo.textContent =
-                "Created: " + artist.creationDate +
-                " | First album: " + artist.firstAlbum;
+                "Created: " +
+                artist.creationDate +
+                " | First album: " +
+                artist.firstAlbum;
 
             panelMembers.innerHTML = "";
             panelConcerts.innerHTML = "";
@@ -43,52 +47,43 @@ quickViewButtons.forEach(function (button) {
                 panelMembers.appendChild(memberItem);
             });
 
+            const concertStatistic = document.createElement("div");
+            concertStatistic.className = "concert-statistic";
+
+            const concertNumber = document.createElement("span");
+            concertNumber.className = "concert-statistic-number";
+            concertNumber.textContent = concertCount;
+
+            const concertLabel = document.createElement("span");
+            concertLabel.className = "concert-statistic-label";
+            concertLabel.textContent = "Total concerts";
+
+            concertStatistic.appendChild(concertNumber);
+            concertStatistic.appendChild(concertLabel);
+
+            const locationDropdown = document.createElement("details");
+            locationDropdown.className = "location-dropdown";
+
+            const locationTitle = document.createElement("summary");
+            locationTitle.textContent =
+                locationCount + " concert locations";
+
+            const locationList = document.createElement("div");
+            locationList.className = "panel-location-list";
+
             for (const location in relation.datesLocations) {
-                const concertGroup = document.createElement("div");
-                concertGroup.className = "concert-group";
+                const locationItem = document.createElement("p");
+                locationItem.className = "panel-location-item";
+                locationItem.textContent = formatLocation(location);
 
-                const concertLocation = document.createElement("strong");
-                concertLocation.className = "panel-concert-location";
-
-                const formattedLocation = location
-                    .replaceAll("-", " ")
-                    .replaceAll("_", " ")
-                    .split(" ")
-                    .map(function (word) {
-                        const formattedWord =
-                            word.charAt(0).toUpperCase() +
-                            word.slice(1);
-
-                        if (formattedWord === "Usa") {
-                            return "USA";
-                        }
-
-                        if (formattedWord === "Uk") {
-                            return "UK";
-                        }
-
-                        return formattedWord;
-                    })
-                    .join(" ");
-
-                concertLocation.textContent = formattedLocation;
-
-                const datesContainer = document.createElement("div");
-                datesContainer.className = "panel-concert-dates";
-
-                relation.datesLocations[location].forEach(function (date) {
-                    const dateItem = document.createElement("span");
-                    dateItem.className = "panel-concert-date";
-                    dateItem.textContent = date;
-
-                    datesContainer.appendChild(dateItem);
-                });
-
-                concertGroup.appendChild(concertLocation);
-                concertGroup.appendChild(datesContainer);
-
-                panelConcerts.appendChild(concertGroup);
+                locationList.appendChild(locationItem);
             }
+
+            locationDropdown.appendChild(locationTitle);
+            locationDropdown.appendChild(locationList);
+
+            panelConcerts.appendChild(concertStatistic);
+            panelConcerts.appendChild(locationDropdown);
 
             artistPanel.classList.add("open");
             document.body.classList.add("panel-open");
@@ -98,13 +93,38 @@ quickViewButtons.forEach(function (button) {
     });
 });
 
+function formatLocation(location) {
+    return location
+        .replaceAll("-", " ")
+        .replaceAll("_", " ")
+        .split(" ")
+        .map(function (word) {
+            const formattedWord =
+                word.charAt(0).toUpperCase() +
+                word.slice(1);
+
+            if (formattedWord === "Usa") {
+                return "USA";
+            }
+
+            if (formattedWord === "Uk") {
+                return "UK";
+            }
+
+            return formattedWord;
+        })
+        .join(" ");
+}
+
 closePanelButton.addEventListener("click", function () {
     artistPanel.classList.remove("open");
     document.body.classList.remove("panel-open");
 });
 
 document.addEventListener("click", function (event) {
-    const clickedInsidePanel = artistPanel.contains(event.target);
+    const clickedInsidePanel =
+        artistPanel.contains(event.target);
+
     const clickedQuickViewButton =
         event.target.closest(".quick-view-button");
 

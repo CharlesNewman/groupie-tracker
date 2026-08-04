@@ -298,6 +298,9 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 		creationMaxText := r.URL.Query().Get("creationMax")
 		firstAlbumMinText := r.URL.Query().Get("firstAlbumMin")
 		firstAlbumMaxText := r.URL.Query().Get("firstAlbumMax")
+		numberOfMembersMaxText := r.URL.Query().Get("membersMax")
+		numberOfMembersMinText := r.URL.Query().Get("membersMin")
+		location := r.URL.Query().Get("location")
 
 		minYear, err := strconv.Atoi(creationMinText)
 		if err != nil {
@@ -323,9 +326,38 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 			return
 		}
 
+		membersMaxNum, err := strconv.Atoi(numberOfMembersMaxText)
+		if err != nil {
+			ErrorHandler(w, "Invalid number of Members", http.StatusBadRequest)
+			return
+		}
+
+		membersMinNum, err := strconv.Atoi(numberOfMembersMinText)
+		if err != nil {
+			ErrorHandler(w, "Invalid number of Members", http.StatusBadRequest)
+			return
+		}
+
 		var filteredArtists []Artist
 
 		for _, artist := range artists {
+
+			matchesLocation := location == ""
+
+			for _, locationData := range locations {
+				if artist.ID != locationData.ID {
+					continue
+				}
+
+				for _, artistLocation := range locationData.Locations {
+					if artistLocation == location {
+						matchesLocation = true
+						break
+					}
+				}
+				break
+			}
+
 			firstAlbumDateText := artist.FirstAlbum
 			result := ""
 			for i := 6; i < len(firstAlbumDateText); i++ {
@@ -338,7 +370,13 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 				return
 			}
 
-			if artist.CreationDate >= minYear && artist.CreationDate <= maxYear && intResult >= albumMinYear && intResult <= albumMaxYear {
+			if artist.CreationDate >= minYear &&
+				artist.CreationDate <= maxYear &&
+				intResult >= albumMinYear &&
+				intResult <= albumMaxYear &&
+				len(artist.Members) >= membersMinNum &&
+				len(artist.Members) <= membersMaxNum &&
+				matchesLocation {
 				filteredArtists = append(filteredArtists, artist)
 			}
 		}
@@ -348,10 +386,12 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 			ErrorHandler(w, "Could not display request", http.StatusInternalServerError)
 			return
 		}
-		filterData := FilterData{
-			Artists: filteredArtists,
+		pageData := PageData{
+			Artists:     filteredArtists,
+			CurrentPage: 1,
 		}
-		err = tmpl.Execute(w, filterData)
+
+		err = tmpl.Execute(w, pageData)
 		if err != nil {
 			ErrorHandler(w, "Could not display page", http.StatusInternalServerError)
 			return

@@ -55,3 +55,8 @@ type Find struct {
 	LocationCount int      `json:"locationCount"`
 	ConcertCount  int      `json:"concertCount"`
 }
+
+type FilterData struct {
+	Artists   []Artist
+	Locations []Location
+}

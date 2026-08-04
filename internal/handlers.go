@@ -287,6 +287,78 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 	}
 }
 
+func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		creationMinText := r.URL.Query().Get("creationMin")
+		creationMaxText := r.URL.Query().Get("creationMax")
+		firstAlbumMinText := r.URL.Query().Get("firstAlbumMin")
+		firstAlbumMaxText := r.URL.Query().Get("firstAlbumMax")
+
+		minYear, err := strconv.Atoi(creationMinText)
+		if err != nil {
+			ErrorHandler(w, "Invalid minimum year", http.StatusBadRequest)
+			return
+		}
+
+		maxYear, err := strconv.Atoi(creationMaxText)
+		if err != nil {
+			ErrorHandler(w, "Invalid maximum year", http.StatusBadRequest)
+			return
+		}
+
+		albumMinYear, err := strconv.Atoi(firstAlbumMinText)
+		if err != nil {
+			ErrorHandler(w, "Invalid minimum album year", http.StatusBadRequest)
+			return
+		}
+
+		albumMaxYear, err := strconv.Atoi(firstAlbumMaxText)
+		if err != nil {
+			ErrorHandler(w, "Invalid maximum year", http.StatusBadRequest)
+			return
+		}
+
+		var filteredArtists []Artist
+
+		for _, artist := range artists {
+			firstAlbumDateText := artist.FirstAlbum
+			result := ""
+			for i := 6; i < len(firstAlbumDateText); i++ {
+				result += string(firstAlbumDateText[i])
+			}
+
+			intResult, err := strconv.Atoi(result)
+			if err != nil {
+				ErrorHandler(w, "Invalid first album year", http.StatusBadRequest)
+				return
+			}
+
+			if artist.CreationDate >= minYear && artist.CreationDate <= maxYear && intResult >= albumMinYear && intResult <= albumMaxYear {
+				filteredArtists = append(filteredArtists, artist)
+			}
+		}
+
+		tmpl, err := template.ParseFiles("templates/index.html")
+		if err != nil {
+			ErrorHandler(w, "Could not display request", http.StatusInternalServerError)
+			return
+		}
+		filterData := FilterData{
+			Artists: filteredArtists,
+		}
+		err = tmpl.Execute(w, filterData)
+		if err != nil {
+			ErrorHandler(w, "Could not display page", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func ErrorHandler(w http.ResponseWriter, message string, statusCode int) {
 
 	type ErrorData struct {

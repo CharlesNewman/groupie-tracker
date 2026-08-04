@@ -68,6 +68,7 @@ func SetupRoutes(artists []Artist, relations []Relation, locations []Location, d
 	mux.HandleFunc("/search", SearchHandler(artists))
 	mux.HandleFunc("/suggestions", SuggestionHandler(artists))
 	mux.HandleFunc("/artist-details", DetailsHandler(artists, relations))
+	mux.HandleFunc("/filter", FilterHandler(artists, locations))
 
 	fileServer := http.FileServer(http.Dir("static"))
 	mux.Handle(

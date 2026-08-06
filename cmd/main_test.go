@@ -2,46 +2,54 @@ package main
 
 import (
 	"errors"
+	"io"
+	"net/http"
+	"os"
 	"testing"
 )
 
-func TestRunSuccess(t *testing.T) {
-	originalStartServer := startServer
+type roundTripFunc func(*http.Request) (*http.Response, error)
 
-	startServer = func() error {
-		return nil
-	}
-
-	t.Cleanup(func() {
-		startServer = originalStartServer
-	})
-
-	err := run()
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-	}
+func (f roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return f(request)
 }
 
-func TestRunReturnsServerError(t *testing.T) {
-	originalStartServer := startServer
-
-	expectedError := errors.New("test server error")
-
-	startServer = func() error {
-		return expectedError
-	}
-
+func TestMainPrintsServerError(t *testing.T) {
+	originalTransport := http.DefaultTransport
+	http.DefaultTransport = roundTripFunc(func(*http.Request) (*http.Response, error) {
+		return nil, errors.New("test server error")
+	})
 	t.Cleanup(func() {
-		startServer = originalStartServer
+		http.DefaultTransport = originalTransport
 	})
 
-	err := run()
+	originalStdout := os.Stdout
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("could not create stdout pipe: %v", err)
+	}
+	os.Stdout = writer
+	t.Cleanup(func() {
+		os.Stdout = originalStdout
+		reader.Close()
+		writer.Close()
+	})
 
-	if !errors.Is(err, expectedError) {
-		t.Errorf(
-			"expected error %v, got %v",
-			expectedError,
-			err,
-		)
+	main()
+
+	if err := writer.Close(); err != nil {
+		t.Fatalf("could not close stdout writer: %v", err)
+	}
+	os.Stdout = originalStdout
+
+	output, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatalf("could not read stdout: %v", err)
+	}
+
+	expected := "Server error: could not fetch artists: " +
+		"Get \"https://groupietrackers.herokuapp.com/api/artists\": test server error\n"
+	if string(output) != expected {
+		t.Errorf("expected output %q, got %q", expected, output)
 	}
 }

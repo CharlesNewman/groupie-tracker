@@ -61,3 +61,23 @@ type FilterData struct {
 	Artists   []Artist
 	Locations []Location
 }
+
+type ArtistResult struct {
+	Artists []Artist
+	Err     error
+}
+
+type RelationResult struct {
+	Relations []Relation
+	Err       error
+}
+
+type LocationResult struct {
+	Locations []Location
+	Err       error
+}
+
+type DateResult struct {
+	Dates []Date
+	Err   error
+}

@@ -23,38 +23,64 @@ func StartServer() error {
 	wg.Add(4)
 
 	// Fetch artists
+
+	artistChannel := make(chan ArtistResult, 1)
+	relationChannel := make(chan RelationResult, 1)
+	locationChannel := make(chan LocationResult, 1)
+	dateChannel := make(chan DateResult, 1)
+
 	go func() {
 		defer wg.Done()
 
-		artists, artistsErr = FetchArtists()
+		artists, err := FetchArtists()
+
+		artistChannel <- ArtistResult{
+			Artists: artists,
+			Err:     err,
+		}
 	}()
 
 	// Fetch relations
-
 	go func() {
 		defer wg.Done()
-		relations, relationsErr = FetchRelations()
+		relations, err := FetchRelations()
+
+		relationChannel <- RelationResult{
+			Relations: relations,
+			Err:       err,
+		}
 	}()
 
 	// Fetch locations
-
 	go func() {
 		defer wg.Done()
+		locations, err := FetchLocations()
 
-		locations, locationsErr = FetchLocations()
-
+		locationChannel <- LocationResult{
+			Locations: locations,
+			Err:       err,
+		}
 	}()
 
 	// Fetch dates
-
 	go func() {
 		defer wg.Done()
-		dates, datesErr = FetchDates()
+		dates, err := FetchDates()
+
+		dateChannel <- DateResult{
+			Dates: dates,
+			Err:   err,
+		}
 	}()
 
 	wg.Wait()
 
 	// Artists Error
+	artistResult := <-artistChannel
+
+	artists = artistResult.Artists
+	artistsErr = artistResult.Err
+
 	if artistsErr != nil {
 		return fmt.Errorf("could not fetch artists: %w", artistsErr)
 	}
@@ -64,6 +90,11 @@ func StartServer() error {
 	}
 
 	// Relation Error
+	RelationResult := <-relationChannel
+
+	relations = RelationResult.Relations
+	relationsErr = RelationResult.Err
+
 	if relationsErr != nil {
 		return fmt.Errorf("could not fetch relations: %w", relationsErr)
 	}
@@ -73,6 +104,10 @@ func StartServer() error {
 	}
 
 	// Location Error
+	LocationResult := <-locationChannel
+
+	locations = LocationResult.Locations
+	locationsErr = LocationResult.Err
 
 	if locationsErr != nil {
 		return fmt.Errorf("could not fetch locations: %w", locationsErr)
@@ -83,6 +118,11 @@ func StartServer() error {
 	}
 
 	// Date Error
+	DateResult := <-dateChannel
+
+	dates = DateResult.Dates
+	datesErr = DateResult.Err
+
 	if datesErr != nil {
 		return fmt.Errorf("could not fetch dates: %w", datesErr)
 	}

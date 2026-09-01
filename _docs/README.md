@@ -23,6 +23,8 @@ The application uses the API's four data sections:
 - **Dates** — concert dates for each artist.
 - **Relations** — connects concert locations with their matching dates.
 
+The four API sections are fetched concurrently using **Go goroutines and `sync.WaitGroup`**, allowing the independent API requests to run at the same time before the server starts.
+
 The website includes artist cards, search, live suggestions, pagination, a Quick View side panel, detailed artist pages, concert information, an interactive map, dark mode and custom error pages.
 
 ---
@@ -66,6 +68,8 @@ PORT=3000 go run ./cmd
 - Responsive layout for desktop, tablet and mobile.
 - Custom `400`, `404`, `405` and `500` error handling.
 - Automated tests for models, handlers, routes and server behavior.
+- Concurrent API fetching using **Go goroutines**.
+- API request synchronization using **`sync.WaitGroup`**.
 
 ---
 
@@ -133,14 +137,27 @@ groupie-tracker/
 
 ## 🧠 Application Flow
 
-1. **Startup:** `StartServer()` requests artists, relations, locations and dates from the API.
-2. **Validation:** The server checks request errors, response status codes and empty API responses.
-3. **Route setup:** `SetupRoutes()` registers the page, JSON and static-file handlers.
-4. **Rendering:** Go templates generate the home, details and error pages.
-5. **Quick View:** JavaScript requests selected artist data as JSON and fills the side panel.
-6. **Search:** The server filters artist names; JavaScript displays live suggestions.
-7. **Concert display:** Relation data connects each location with its concert dates.
-8. **Map:** The browser geocodes concert locations and places markers on a Leaflet map.
+1. **Startup:** `StartServer()` prepares the application and starts the API data loading process.
+
+2. **Concurrent API requests:** Four goroutines fetch artists, relations, locations and dates at the same time.
+
+3. **Synchronization:** `sync.WaitGroup` waits until all four goroutines finish.
+
+4. **Validation:** The server checks request errors, response status codes and empty API responses.
+
+5. **Route setup:** `SetupRoutes()` registers the page, JSON, filter and static-file handlers.
+
+6. **Rendering:** Go templates generate the home, details and error pages.
+
+7. **Filtering:** The server filters artists by creation year, first album year, member count and location.
+
+8. **Quick View:** JavaScript requests selected artist data as JSON and fills the side panel.
+
+9. **Search:** The server filters artist names and JavaScript displays live suggestions.
+
+10. **Concert display:** Relation data connects each location with its concert dates.
+
+11. **Map:** The browser geocodes concert locations and places markers on a Leaflet map.
 
 ---
 
@@ -154,8 +171,21 @@ groupie-tracker/
 - **JSON:** `encoding/json`
 - **Map:** Leaflet with OpenStreetMap tiles
 - **Geocoding:** Nominatim OpenStreetMap search service
+- **Concurrency:** Goroutines and `sync.WaitGroup`
 
 > The Go backend uses only standard-library packages. Leaflet is loaded in the browser for the map interface.
+
+---
+
+## ⚡ Concurrency
+
+The application uses Go goroutines during startup.
+
+Artists, relations, locations and dates are independent API requests, so `StartServer()` starts four goroutines to fetch them concurrently.
+
+A `sync.WaitGroup` waits until all four goroutines have finished before the results are checked and the HTTP server starts.
+
+This avoids waiting for each API request to finish before starting the next one.
 
 ---
 
@@ -171,6 +201,12 @@ Run tests with detailed output:
 
 ```bash
 go test -v ./...
+```
+
+Run tests with Go's race detector (If it passes with no race warnings it means the goroutine is safe):
+
+```bash
+go test -race ./...
 ```
 
 The test suite covers:

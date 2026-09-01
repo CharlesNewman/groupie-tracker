@@ -4,43 +4,87 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 )
 
 func StartServer() error {
+
+	var wg sync.WaitGroup
+
+	var artists []Artist
+	var relations []Relation
+	var locations []Location
+	var dates []Date
+	var artistsErr error
+	var relationsErr error
+	var locationsErr error
+	var datesErr error
+
+	wg.Add(4)
+
 	// Fetch artists
-	artists, err := FetchArtists()
-	if err != nil {
-		return fmt.Errorf("could not fetch artists: %w", err)
+	go func() {
+		defer wg.Done()
+
+		artists, artistsErr = FetchArtists()
+	}()
+
+	// Fetch relations
+
+	go func() {
+		defer wg.Done()
+		relations, relationsErr = FetchRelations()
+	}()
+
+	// Fetch locations
+
+	go func() {
+		defer wg.Done()
+
+		locations, locationsErr = FetchLocations()
+
+	}()
+
+	// Fetch dates
+
+	go func() {
+		defer wg.Done()
+		dates, datesErr = FetchDates()
+	}()
+
+	wg.Wait()
+
+	// Artists Error
+	if artistsErr != nil {
+		return fmt.Errorf("could not fetch artists: %w", artistsErr)
 	}
 
 	if len(artists) == 0 {
 		return fmt.Errorf("no artists received")
 	}
 
-	// Fetch relations
-	relations, err := FetchRelations()
-	if err != nil {
-		return fmt.Errorf("could not fetch relations: %w", err)
+	// Relation Error
+	if relationsErr != nil {
+		return fmt.Errorf("could not fetch relations: %w", relationsErr)
 	}
 
 	if len(relations) == 0 {
 		return fmt.Errorf("no relations received")
 	}
 
-	// Fetch locations
-	locations, err := FetchLocations()
-	if err != nil {
-		return fmt.Errorf("could not fetch locations: %w", err)
+	// Location Error
+
+	if locationsErr != nil {
+		return fmt.Errorf("could not fetch locations: %w", locationsErr)
 	}
 
 	if len(locations) == 0 {
 		return fmt.Errorf("no locations received")
 	}
 
-	// Fetch dates
-	dates, err := FetchDates()
-	if err != nil {
-		return fmt.Errorf("could not fetch dates: %w", err)
+	// Date Error
+	if datesErr != nil {
+		return fmt.Errorf("could not fetch dates: %w", datesErr)
 	}
 
 	if len(dates) == 0 {

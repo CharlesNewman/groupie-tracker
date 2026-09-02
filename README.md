@@ -23,7 +23,7 @@ The application uses the API's four data sections:
 - **Dates** — concert dates for each artist.
 - **Relations** — connects concert locations with their matching dates.
 
-The four API sections are fetched concurrently using **Go goroutines**, allowing the independent API requests to run at the same time before the server starts.
+The four API sections are fetched concurrently using **Go goroutines**, allowing the independent API requests to run at the same time before the server starts. The fetched data is kept in memory as an in-memory cache and is automatically re-fetched on a fixed interval, so the server never queries the external API on every request.
 
 The website includes artist cards, search, live suggestions, pagination, a Quick View side panel, detailed artist pages, concert information, an interactive map, dark mode and custom error pages.
 
@@ -73,8 +73,9 @@ PORT=3000 go run ./cmd
 - Responsive layout for desktop, tablet and mobile.
 - Custom `400`, `404`, `405` and `500` error handling.
 - Automated tests for models, handlers, routes and server behavior.
-- Concurrent API fetching using **Go goroutines**.
-- Automatic background data refresh from the API every 10 minutes.
+- Concurrent API fetching using **Go goroutines** and channels.
+- In-memory caching of artist, relation, location and date data.
+- Automatic background cache refresh from the API every 10 minutes, controlled by the `SyncInterval` value.
 
 ---
 
@@ -142,27 +143,31 @@ groupie-tracker/
 
 ## 🧠 Application Flow
 
-1. **Startup:** `StartServer()` prepares the application and starts the API data loading process.
+1. **Startup:** `StartServer()` runs an initial `FetchAPI()` call before the HTTP server starts, so the in-memory cache is populated from the first request onward.
 
-2. **Concurrent API requests:** Four goroutines fetch artists, relations, locations and dates at the same time.
+2. **Concurrent API requests:** Four goroutines fetch artists, relations, locations and dates at the same time, each sending its result over its own channel.
 
-3. **Synchronization:** `sync.WaitGroup` waits until all four goroutines finish.
+3. **Synchronization:** A `select` statement waits on all four channels until every goroutine has reported back.
 
-4. **Validation:** The server checks request errors, response status codes and empty API responses.
+4. **Validation:** The server checks request errors, response status codes and empty API responses before touching the cache.
 
-5. **Route setup:** `SetupRoutes()` registers the page, JSON, filter and static-file handlers.
+5. **Caching:** Once all four fetches succeed, the results replace the in-memory cache (`artists`, `relations`, `locations`, `dates`) that every handler reads from.
 
-6. **Rendering:** Go templates generate the home, details and error pages.
+6. **Background refresh:** A separate goroutine calls `FetchAPI()` again every `SyncInterval` (10 minutes) using `time.Tick`, refreshing the cache without blocking requests.
 
-7. **Filtering:** The server filters artists by creation year, first album year, member count and location.
+7. **Route setup:** `SetupRoutes()` registers the page, JSON, filter and static-file handlers.
 
-8. **Quick View:** JavaScript requests selected artist data as JSON and fills the side panel.
+8. **Rendering:** Go templates generate the home, details and error pages.
 
-9. **Search:** The server filters artist names and JavaScript displays live suggestions.
+9. **Filtering:** The server filters artists by creation year, first album year, member count and location.
 
-10. **Concert display:** Relation data connects each location with its concert dates.
+10. **Quick View:** JavaScript requests selected artist data as JSON and fills the side panel.
 
-11. **Map:** The browser geocodes concert locations and places markers on a Leaflet map.
+11. **Search:** The server filters artist names and JavaScript displays live suggestions.
+
+12. **Concert display:** Relation data connects each location with its concert dates.
+
+13. **Map:** The browser geocodes concert locations and places markers on a Leaflet map.
 
 ---
 
@@ -176,21 +181,22 @@ groupie-tracker/
 - **JSON:** `encoding/json`
 - **Map:** Leaflet with OpenStreetMap tiles
 - **Geocoding:** Nominatim OpenStreetMap search service
-- **Concurrency:** Goroutines and `sync.WaitGroup`
+- **Concurrency:** Goroutines, channels and `select`
+- **Caching:** In-memory package-level cache, refreshed on a `time.Tick` interval
 
 > The Go backend uses only standard-library packages. Leaflet is loaded in the browser for the map interface.
 
 ---
 
-## ⚡ Concurrency
+## ⚡ Concurrency & Caching
 
-The application uses Go goroutines during startup.
+Artists, relations, locations and dates are independent API requests, so `FetchAPI()` starts four goroutines to fetch them concurrently instead of one after another.
 
-Artists, relations, locations and dates are independent API requests, so `StartServer()` starts four goroutines to fetch them concurrently.
+Each goroutine sends its result over its own channel. A `select` statement inside `FetchAPI()` reads from all four channels in a loop until every goroutine has reported back — this is the fan-in pattern: several producers, one consumer collecting all of them before moving on.
 
-A `sync.WaitGroup` waits until all four goroutines have finished before the results are checked and the HTTP server starts.
+The results are only written to the package-level `artists`, `relations`, `locations` and `dates` variables once all four fetches succeed. Every HTTP handler reads from these variables instead of calling the external API directly, which makes them an **in-memory cache**.
 
-This avoids waiting for each API request to finish before starting the next one.
+This cache is not static: `StartServer()` populates it once at startup, then launches a background goroutine that calls `FetchAPI()` again on a fixed interval (`time.Tick(SyncInterval)`, currently 10 minutes). This periodic cache refresh keeps the data reasonably up to date without slowing down individual requests or hitting the external API on every page load.
 
 ---
 
@@ -246,8 +252,11 @@ go build -o groupie-tracker ./cmd
 ## 📝 Authors
 
 **Charles Newman** | cnewman | Cohort 2.3 | Zone01 Athens
+
 **Pavlos Avgerinos** | pavgerin | Cohort 2.3 | Zone01 Athens
+
 **Nikos Antoniou** | nantoniou | Cohort 2.3 | Zone01 Athens
+
 ---
 
 ## 📄 License

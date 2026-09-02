@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var SyncInterval = 10 * time.Minute // Fetch API Interval in minutes
+const SyncInterval = 10 * time.Minute // Fetch API Interval in minutes
 
 var (
 	artists   []Artist

@@ -168,6 +168,99 @@ func TestHomeRejectsPost(t *testing.T) {
 	}
 }
 
+func TestSearchRoute(t *testing.T) {
+	moveToProjectRoot(t)
+	setTestData(t)
+
+	mux := SetupRoutes()
+
+	request := httptest.NewRequest(
+		http.MethodGet,
+		"/search?query=Test",
+		nil,
+	)
+	response := httptest.NewRecorder()
+
+	mux.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
+	}
+
+	if !strings.Contains(response.Body.String(), "Test Band") {
+		t.Error("search results did not display Test Band")
+	}
+}
+
+func TestArtistRoute(t *testing.T) {
+	setTestData(t)
+
+	mux := SetupRoutes()
+
+	request := httptest.NewRequest(
+		http.MethodGet,
+		"/artist?id=1",
+		nil,
+	)
+	response := httptest.NewRecorder()
+
+	mux.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
+	}
+
+	var result Find
+
+	err := json.NewDecoder(response.Body).Decode(&result)
+	if err != nil {
+		t.Fatalf("could not decode artist details: %v", err)
+	}
+
+	if result.Artist.Name != "Test Band" {
+		t.Errorf(
+			"expected Test Band, got %s",
+			result.Artist.Name,
+		)
+	}
+}
+
+func TestArtistDetailsRoute(t *testing.T) {
+	moveToProjectRoot(t)
+	setTestData(t)
+
+	mux := SetupRoutes()
+
+	request := httptest.NewRequest(
+		http.MethodGet,
+		"/artist-details?id=1",
+		nil,
+	)
+	response := httptest.NewRecorder()
+
+	mux.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Errorf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			response.Code,
+		)
+	}
+
+	if !strings.Contains(response.Body.String(), "Test Band") {
+		t.Error("artist details page did not display Test Band")
+	}
+}
+
 func TestSuggestionsRoute(t *testing.T) {
 	setTestData(t)
 

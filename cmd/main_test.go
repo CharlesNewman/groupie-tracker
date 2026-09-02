@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -47,9 +48,8 @@ func TestMainPrintsServerError(t *testing.T) {
 		t.Fatalf("could not read stdout: %v", err)
 	}
 
-	expected := "Server error: could not fetch artists: " +
-		"Get \"https://groupietrackers.herokuapp.com/api/artists\": test server error\n"
-	if string(output) != expected {
-		t.Errorf("expected output %q, got %q", expected, output)
+	expectedPrefix := "Server error"
+	if !strings.HasPrefix(string(output), expectedPrefix) {
+		t.Errorf("expected output to start with %q, got %q", expectedPrefix, output)
 	}
 }

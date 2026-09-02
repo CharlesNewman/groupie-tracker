@@ -2,13 +2,12 @@ package internal
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
 )
 
-var SyncInterval time.Duration = 10 // Interval in minutes
+var SyncInterval = 10 * time.Minute // Fetch API Interval in minutes
 
 var (
 	artists   []Artist
@@ -27,15 +26,15 @@ func StartServer() error {
 
 	// Background FetchAPI with ticker loop every 10 minutes
 	go func() {
-		for range time.Tick(SyncInterval * time.Minute) {
+		for range time.Tick(SyncInterval) {
 
 			err := FetchAPI()
 
 			if err != nil {
-				log.Printf("Background refresh error: %v", err)
+				fmt.Printf("Background refresh error: %v", err)
 				continue
 			}
-			log.Println("Data refreshed successfully in background!")
+			fmt.Println("Data refreshed successfully in background!")
 		}
 	}()
 
@@ -76,10 +75,10 @@ func FetchAPI() error {
 	// Fetch artists
 	go func() {
 
-		artists, err := FetchArtists()
+		fetchedArtists, err := FetchArtists()
 
 		artistChannel <- ArtistResult{
-			Artists: artists,
+			Artists: fetchedArtists,
 			Err:     err,
 		}
 	}()
@@ -87,10 +86,10 @@ func FetchAPI() error {
 	// Fetch relations
 	go func() {
 
-		relations, err := FetchRelations()
+		fetchedRelations, err := FetchRelations()
 
 		relationChannel <- RelationResult{
-			Relations: relations,
+			Relations: fetchedRelations,
 			Err:       err,
 		}
 	}()
@@ -98,10 +97,10 @@ func FetchAPI() error {
 	// Fetch locations
 	go func() {
 
-		locations, err := FetchLocations()
+		fetchLocations, err := FetchLocations()
 
 		locationChannel <- LocationResult{
-			Locations: locations,
+			Locations: fetchLocations,
 			Err:       err,
 		}
 	}()
@@ -109,30 +108,36 @@ func FetchAPI() error {
 	// Fetch dates
 	go func() {
 
-		dates, err := FetchDates()
+		fetchDates, err := FetchDates()
 
 		dateChannel <- DateResult{
-			Dates: dates,
+			Dates: fetchDates,
 			Err:   err,
 		}
 	}()
 
+	// Local temporary buffers to protect global state
+	var tempArtists []Artist
+	var tempRelations []Relation
+	var tempLocations []Location
+	var tempDates []Date
+
 	for i := 0; i < 4; i++ {
 		select {
 		case artistResult := <-artistChannel:
-			artists = artistResult.Artists
+			tempArtists = artistResult.Artists
 			artistsErr = artistResult.Err
 
 		case RelationResult := <-relationChannel:
-			relations = RelationResult.Relations
+			tempRelations = RelationResult.Relations
 			relationsErr = RelationResult.Err
 
 		case LocationResult := <-locationChannel:
-			locations = LocationResult.Locations
+			tempLocations = LocationResult.Locations
 			locationsErr = LocationResult.Err
 
 		case DateResult := <-dateChannel:
-			dates = DateResult.Dates
+			tempDates = DateResult.Dates
 			datesErr = DateResult.Err
 
 		}
@@ -141,27 +146,33 @@ func FetchAPI() error {
 	if artistsErr != nil {
 		return fmt.Errorf("could not fetch artists: %w", artistsErr)
 	}
-	if len(artists) == 0 {
+	if len(tempArtists) == 0 {
 		return fmt.Errorf("no artists received")
 	}
 	if relationsErr != nil {
 		return fmt.Errorf("could not fetch relations: %w", relationsErr)
 	}
-	if len(relations) == 0 {
+	if len(tempRelations) == 0 {
 		return fmt.Errorf("no relations received")
 	}
 	if locationsErr != nil {
 		return fmt.Errorf("could not fetch locations: %w", locationsErr)
 	}
-	if len(locations) == 0 {
+	if len(tempLocations) == 0 {
 		return fmt.Errorf("no locations received")
 	}
 	if datesErr != nil {
 		return fmt.Errorf("could not fetch dates: %w", datesErr)
 	}
-	if len(dates) == 0 {
+	if len(tempDates) == 0 {
 		return fmt.Errorf("no dates received")
 	}
+	// Fail-safe barrier: update globals ONLY when every fetch succeeds
+	artists = tempArtists
+	relations = tempRelations
+	locations = tempLocations
+	dates = tempDates
+
 	return nil
 }
 

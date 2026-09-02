@@ -70,6 +70,7 @@ PORT=3000 go run ./cmd
 - Automated tests for models, handlers, routes and server behavior.
 - Concurrent API fetching using **Go goroutines**.
 - API request synchronization using **`sync.WaitGroup`**.
+- Automatic background data refresh from the API every 10 minutes.
 
 ---
 

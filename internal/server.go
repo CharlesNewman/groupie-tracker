@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,7 @@ var (
 	locations []Location
 	dates     []Date
 )
+var dataMutex sync.RWMutex
 
 func StartServer() error {
 	// Initial FetchAPI
@@ -61,6 +63,7 @@ func StartServer() error {
 }
 
 func FetchAPI() error {
+
 	var artistsErr error
 	var relationsErr error
 	var locationsErr error
@@ -168,10 +171,18 @@ func FetchAPI() error {
 		return fmt.Errorf("no dates received")
 	}
 	// Fail-safe barrier: update globals ONLY when every fetch succeeds
+
+	// Safely read the latest shared API data while preventing background updates during the read.
+
+	// dataMutex is used to make sure while the data are written or read nothing changes
+	dataMutex.Lock()
+
 	artists = tempArtists
 	relations = tempRelations
 	locations = tempLocations
 	dates = tempDates
+
+	dataMutex.Unlock()
 
 	return nil
 }
@@ -179,12 +190,12 @@ func FetchAPI() error {
 func SetupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", Handler(artists, locations))
-	mux.HandleFunc("/artist", ArtistDetailsHandler(artists, relations, locations, dates))
-	mux.HandleFunc("/search", SearchHandler(artists))
-	mux.HandleFunc("/suggestions", SuggestionHandler(artists))
-	mux.HandleFunc("/artist-details", DetailsHandler(artists, relations))
-	mux.HandleFunc("/filter", FilterHandler(artists, locations))
+	mux.HandleFunc("/", Handler())
+	mux.HandleFunc("/artist", ArtistDetailsHandler())
+	mux.HandleFunc("/search", SearchHandler())
+	mux.HandleFunc("/suggestions", SuggestionHandler())
+	mux.HandleFunc("/artist-details", DetailsHandler())
+	mux.HandleFunc("/filter", FilterHandler())
 
 	fileServer := http.FileServer(http.Dir("static"))
 	mux.Handle(

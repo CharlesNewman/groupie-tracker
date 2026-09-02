@@ -79,6 +79,19 @@ func handlerTestData() ([]Artist, []Relation, []Location, []Date) {
 	return artists, relations, locations, dates
 }
 
+func loadHandlerTestData() {
+	testArtists, testRelations, testLocations, testDates := handlerTestData()
+
+	dataMutex.Lock()
+
+	artists = testArtists
+	relations = testRelations
+	locations = testLocations
+	dates = testDates
+
+	dataMutex.Unlock()
+}
+
 func moveHandlersTestsToRoot(t *testing.T) {
 	t.Helper()
 
@@ -102,13 +115,12 @@ func moveHandlersTestsToRoot(t *testing.T) {
 
 func TestHandlerHomePage(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
 
-	Handler(artists, locations).ServeHTTP(response, request)
+	Handler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d", response.Code)
@@ -127,8 +139,7 @@ func TestHandlerHomePage(t *testing.T) {
 
 func TestHandlerInvalidPath(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -137,7 +148,7 @@ func TestHandlerInvalidPath(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	Handler(artists, locations).ServeHTTP(response, request)
+	Handler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusNotFound {
 		t.Errorf(
@@ -150,13 +161,12 @@ func TestHandlerInvalidPath(t *testing.T) {
 
 func TestHandlerRejectsPost(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
 	response := httptest.NewRecorder()
 
-	Handler(artists, locations).ServeHTTP(response, request)
+	Handler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusMethodNotAllowed {
 		t.Errorf(
@@ -169,8 +179,7 @@ func TestHandlerRejectsPost(t *testing.T) {
 
 func TestSearchHandler(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, _, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -179,7 +188,7 @@ func TestSearchHandler(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	SearchHandler(artists).ServeHTTP(response, request)
+	SearchHandler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d", response.Code)
@@ -198,8 +207,7 @@ func TestSearchHandler(t *testing.T) {
 
 func TestSearchHandlerEmptyQuery(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, _, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -208,7 +216,7 @@ func TestSearchHandlerEmptyQuery(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	SearchHandler(artists).ServeHTTP(response, request)
+	SearchHandler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusBadRequest {
 		t.Errorf(
@@ -220,7 +228,7 @@ func TestSearchHandlerEmptyQuery(t *testing.T) {
 }
 
 func TestSuggestionHandler(t *testing.T) {
-	artists, _, _, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -229,7 +237,7 @@ func TestSuggestionHandler(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	SuggestionHandler(artists).ServeHTTP(response, request)
+	SuggestionHandler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d", response.Code)
@@ -252,7 +260,7 @@ func TestSuggestionHandler(t *testing.T) {
 }
 
 func TestArtistDetailsHandler(t *testing.T) {
-	artists, relations, locations, dates := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -261,12 +269,7 @@ func TestArtistDetailsHandler(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	ArtistDetailsHandler(
-		artists,
-		relations,
-		locations,
-		dates,
-	).ServeHTTP(response, request)
+	ArtistDetailsHandler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d", response.Code)
@@ -302,7 +305,7 @@ func TestArtistDetailsHandler(t *testing.T) {
 }
 
 func TestArtistDetailsInvalidID(t *testing.T) {
-	artists, relations, locations, dates := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -311,12 +314,7 @@ func TestArtistDetailsInvalidID(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	ArtistDetailsHandler(
-		artists,
-		relations,
-		locations,
-		dates,
-	).ServeHTTP(response, request)
+	ArtistDetailsHandler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusBadRequest {
 		t.Errorf(
@@ -329,8 +327,7 @@ func TestArtistDetailsInvalidID(t *testing.T) {
 
 func TestHandlerFilterByCreationYear(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -339,7 +336,7 @@ func TestHandlerFilterByCreationYear(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	FilterHandler(artists, locations).ServeHTTP(response, request)
+	FilterHandler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d", response.Code)
@@ -358,8 +355,7 @@ func TestHandlerFilterByCreationYear(t *testing.T) {
 
 func TestFilterByFirstAlbumYear(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -368,7 +364,7 @@ func TestFilterByFirstAlbumYear(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	FilterHandler(artists, locations).ServeHTTP(response, request)
+	FilterHandler().ServeHTTP(response, request)
 
 	body := response.Body.String()
 
@@ -383,8 +379,7 @@ func TestFilterByFirstAlbumYear(t *testing.T) {
 
 func TestHandlerFilterByMembers(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -393,7 +388,7 @@ func TestHandlerFilterByMembers(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	FilterHandler(artists, locations).ServeHTTP(response, request)
+	FilterHandler().ServeHTTP(response, request)
 
 	body := response.Body.String()
 
@@ -408,8 +403,7 @@ func TestHandlerFilterByMembers(t *testing.T) {
 
 func TestFilterAtLeastMembersValues(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -418,7 +412,7 @@ func TestFilterAtLeastMembersValues(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	FilterHandler(artists, locations).ServeHTTP(response, request)
+	FilterHandler().ServeHTTP(response, request)
 
 	body := response.Body.String()
 
@@ -437,8 +431,7 @@ func TestFilterAtLeastMembersValues(t *testing.T) {
 
 func TestHandlerFilterByLocation(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -447,7 +440,7 @@ func TestHandlerFilterByLocation(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	FilterHandler(artists, locations).ServeHTTP(response, request)
+	FilterHandler().ServeHTTP(response, request)
 
 	body := response.Body.String()
 
@@ -462,8 +455,7 @@ func TestHandlerFilterByLocation(t *testing.T) {
 
 func TestCombinedFilters(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -472,7 +464,7 @@ func TestCombinedFilters(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	FilterHandler(artists, locations).ServeHTTP(response, request)
+	FilterHandler().ServeHTTP(response, request)
 
 	body := response.Body.String()
 
@@ -487,8 +479,7 @@ func TestCombinedFilters(t *testing.T) {
 
 func TestFilterRejectsInvalidYear(t *testing.T) {
 	moveHandlersTestsToRoot(t)
-
-	artists, _, locations, _ := handlerTestData()
+	loadHandlerTestData()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -497,7 +488,7 @@ func TestFilterRejectsInvalidYear(t *testing.T) {
 	)
 	response := httptest.NewRecorder()
 
-	FilterHandler(artists, locations).ServeHTTP(response, request)
+	FilterHandler().ServeHTTP(response, request)
 
 	if response.Code != http.StatusBadRequest {
 		t.Errorf(

@@ -8,8 +8,13 @@ import (
 	"strings"
 )
 
-func Handler(artists []Artist, locations []Location) http.HandlerFunc {
+func Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		dataMutex.RLock()
+		currentArtists := artists
+		currentLocations := locations
+		dataMutex.RUnlock()
 
 		if r.URL.Path != "/" {
 			ErrorHandler(w, "Invalid path", http.StatusNotFound)
@@ -31,7 +36,7 @@ func Handler(artists []Artist, locations []Location) http.HandlerFunc {
 		readPage := r.URL.Query().Get("page")
 		currentPage := 1
 		pageSize := 12
-		maxPage := (len(artists) + pageSize - 1) / pageSize
+		maxPage := (len(currentArtists) + pageSize - 1) / pageSize
 		if readPage != "" {
 			pageNumber, err := strconv.Atoi(readPage)
 			if err != nil {
@@ -51,8 +56,8 @@ func Handler(artists []Artist, locations []Location) http.HandlerFunc {
 		theListOfLocations := []string{}
 		seenLocations := make(map[string]bool)
 
-		for i := 0; i < len(locations); i++ {
-			location := locations[i]
+		for i := 0; i < len(currentLocations); i++ {
+			location := currentLocations[i]
 			for j := 0; j < len(location.Locations); j++ {
 				if seenLocations[location.Locations[j]] {
 					continue
@@ -65,16 +70,16 @@ func Handler(artists []Artist, locations []Location) http.HandlerFunc {
 		start := (currentPage - 1) * pageSize
 		end := start + pageSize
 
-		if end > len(artists) {
-			end = len(artists)
+		if end > len(currentArtists) {
+			end = len(currentArtists)
 		}
 		PreviousPage := currentPage - 1
 		NextPage := currentPage + 1
 		HasPrevious := currentPage > 1
-		HasNext := end < len(artists)
+		HasNext := end < len(currentArtists)
 
 		pageData := PageData{
-			Artists:      artists[start:end],
+			Artists:      currentArtists[start:end],
 			CurrentPage:  currentPage,
 			PreviousPage: PreviousPage,
 			NextPage:     NextPage,
@@ -91,8 +96,12 @@ func Handler(artists []Artist, locations []Location) http.HandlerFunc {
 	}
 }
 
-func SearchHandler(artists []Artist) http.HandlerFunc {
+func SearchHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		dataMutex.RLock()
+		currentArtists := artists
+		dataMutex.RUnlock()
 
 		if r.Method != http.MethodGet {
 			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -102,8 +111,8 @@ func SearchHandler(artists []Artist) http.HandlerFunc {
 		SearchRequest := r.URL.Query().Get("query")
 		lowerSearchRequest := strings.ToLower(SearchRequest)
 		var matches []Artist
-		for i := 0; i < len(artists); i++ {
-			artist := artists[i]
+		for i := 0; i < len(currentArtists); i++ {
+			artist := currentArtists[i]
 			lowerArtist := strings.ToLower(artist.Name)
 			if strings.Contains(lowerArtist, lowerSearchRequest) {
 				matches = append(matches, artist)
@@ -132,8 +141,12 @@ func SearchHandler(artists []Artist) http.HandlerFunc {
 	}
 }
 
-func SuggestionHandler(artists []Artist) http.HandlerFunc {
+func SuggestionHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		dataMutex.RLock()
+		currentArtists := artists
+		dataMutex.RUnlock()
 
 		if r.Method != http.MethodGet {
 			//Use ErrorHandler for full pages if you do here it will break response.json() in javascript
@@ -144,8 +157,8 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 		SuggestionRequest := r.URL.Query().Get("query")
 		lowerSuggestionRequest := strings.ToLower(SuggestionRequest)
 		var matches []Artist
-		for i := 0; i < len(artists); i++ {
-			artist := artists[i]
+		for i := 0; i < len(currentArtists); i++ {
+			artist := currentArtists[i]
 			lowerArtist := strings.ToLower(artist.Name)
 			if strings.Contains(lowerArtist, lowerSuggestionRequest) {
 				matches = append(matches, artist)
@@ -162,8 +175,15 @@ func SuggestionHandler(artists []Artist) http.HandlerFunc {
 	}
 }
 
-func ArtistDetailsHandler(artists []Artist, relations []Relation, locations []Location, dates []Date) http.HandlerFunc {
+func ArtistDetailsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		dataMutex.RLock()
+		currentArtists := artists
+		currentRelations := relations
+		currentLocations := locations
+		currentDates := dates
+		dataMutex.RUnlock()
 
 		//The errors work with javascript here as well thats why we use http.Error instead the ErrorHandler
 
@@ -183,23 +203,23 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation, locations []Lo
 		var locationCount int
 		var concertCount int
 
-		for i := 0; i < len(artists); i++ {
-			artist := artists[i]
+		for i := 0; i < len(currentArtists); i++ {
+			artist := currentArtists[i]
 			if artist.ID == idInt {
 				FoundArtist = artist
 				break
 			}
 		}
-		for i := 0; i < len(relations); i++ {
-			relation := relations[i]
+		for i := 0; i < len(currentRelations); i++ {
+			relation := currentRelations[i]
 			if relation.ID == idInt {
 				FoundRelation = relation
 				break
 			}
 		}
 
-		for i := 0; i < len(locations); i++ {
-			location := locations[i]
+		for i := 0; i < len(currentLocations); i++ {
+			location := currentLocations[i]
 
 			if location.ID == idInt {
 				locationCount = len(location.Locations)
@@ -207,8 +227,8 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation, locations []Lo
 			}
 		}
 
-		for i := 0; i < len(dates); i++ {
-			date := dates[i]
+		for i := 0; i < len(currentDates); i++ {
+			date := currentDates[i]
 
 			if date.ID == idInt {
 				concertCount = len(date.Dates)
@@ -236,8 +256,13 @@ func ArtistDetailsHandler(artists []Artist, relations []Relation, locations []Lo
 	}
 }
 
-func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
+func DetailsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		dataMutex.RLock()
+		currentArtists := artists
+		currentRelations := relations
+		dataMutex.RUnlock()
 
 		if r.Method != http.MethodGet {
 			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -254,15 +279,15 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 		var FoundArtist Artist
 		var FoundRelation Relation
 
-		for i := 0; i < len(artists); i++ {
-			artist := artists[i]
+		for i := 0; i < len(currentArtists); i++ {
+			artist := currentArtists[i]
 			if artist.ID == idInt {
 				FoundArtist = artist
 				break
 			}
 		}
-		for j := 0; j < len(relations); j++ {
-			relation := relations[j]
+		for j := 0; j < len(currentRelations); j++ {
+			relation := currentRelations[j]
 			if relation.ID == idInt {
 				FoundRelation = relation
 				break
@@ -294,8 +319,14 @@ func DetailsHandler(artists []Artist, relations []Relation) http.HandlerFunc {
 	}
 }
 
-func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
+func FilterHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		dataMutex.RLock()
+		currentArtists := artists
+		currentLocations := locations
+		dataMutex.RUnlock()
+
 		if r.Method != http.MethodGet {
 			ErrorHandler(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -362,7 +393,7 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 
 		var filteredArtists []Artist
 
-		for _, artist := range artists {
+		for _, artist := range currentArtists {
 			// when location is empty, accept every artist
 			// when location has text, only accept matching artists
 			matchesLocation := location == ""
@@ -377,7 +408,7 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 					break
 				}
 			}
-			for _, locationData := range locations {
+			for _, locationData := range currentLocations {
 				if artist.ID != locationData.ID {
 					continue
 				}
@@ -446,8 +477,8 @@ func FilterHandler(artists []Artist, locations []Location) http.HandlerFunc {
 		theListOfLocations := []string{}
 		seenLocations := make(map[string]bool)
 
-		for i := 0; i < len(locations); i++ {
-			location := locations[i]
+		for i := 0; i < len(currentLocations); i++ {
+			location := currentLocations[i]
 			for j := 0; j < len(location.Locations); j++ {
 				if seenLocations[location.Locations[j]] {
 					continue

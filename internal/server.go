@@ -2,35 +2,79 @@ package internal
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"sync"
+	"time"
+)
+
+var SyncInterval time.Duration = 10 // Interval in minutes
+
+var (
+	artists   []Artist
+	relations []Relation
+	locations []Location
+	dates     []Date
 )
 
 func StartServer() error {
+	// Initial FetchAPI
+	err := FetchAPI()
 
-	var wg sync.WaitGroup
+	if err != nil {
+		return fmt.Errorf("initial sync failed: %w", err)
+	}
 
-	var artists []Artist
-	var relations []Relation
-	var locations []Location
-	var dates []Date
+	// Background FetchAPI with ticker loop every 10 minutes
+	go func() {
+		for range time.Tick(SyncInterval * time.Minute) {
+
+			err := FetchAPI()
+
+			if err != nil {
+				log.Printf("Background refresh error: %v", err)
+				continue
+			}
+			log.Println("Data refreshed successfully in background!")
+		}
+	}()
+
+	// Webapp Port
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	mux := SetupRoutes()
+	// Message on server start
+	fmt.Println("Server running at http://localhost:" + port)
+
+	server := &http.Server{
+		Addr:              ":" + port,        // TCP address to listen on
+		Handler:           mux,               // Handler to invoke (our router)
+		ReadTimeout:       5 * time.Second,   // Max duration for reading the entire request
+		ReadHeaderTimeout: 2 * time.Second,   // Max duration for reading request headers (Slowloris protection)
+		WriteTimeout:      10 * time.Second,  // Max duration before timing out writes of the response
+		IdleTimeout:       120 * time.Second, // Max amount of time to wait for the next request when keep-alive is enabled
+	}
+	// Serve webapp
+	return server.ListenAndServe()
+}
+
+func FetchAPI() error {
 	var artistsErr error
 	var relationsErr error
 	var locationsErr error
 	var datesErr error
 
-	wg.Add(4)
+	// Channels
+	artistChannel := make(chan ArtistResult)
+	relationChannel := make(chan RelationResult)
+	locationChannel := make(chan LocationResult)
+	dateChannel := make(chan DateResult)
 
 	// Fetch artists
-
-	artistChannel := make(chan ArtistResult, 1)
-	relationChannel := make(chan RelationResult, 1)
-	locationChannel := make(chan LocationResult, 1)
-	dateChannel := make(chan DateResult, 1)
-
 	go func() {
-		defer wg.Done()
 
 		artists, err := FetchArtists()
 
@@ -42,7 +86,7 @@ func StartServer() error {
 
 	// Fetch relations
 	go func() {
-		defer wg.Done()
+
 		relations, err := FetchRelations()
 
 		relationChannel <- RelationResult{
@@ -53,7 +97,7 @@ func StartServer() error {
 
 	// Fetch locations
 	go func() {
-		defer wg.Done()
+
 		locations, err := FetchLocations()
 
 		locationChannel <- LocationResult{
@@ -64,7 +108,7 @@ func StartServer() error {
 
 	// Fetch dates
 	go func() {
-		defer wg.Done()
+
 		dates, err := FetchDates()
 
 		dateChannel <- DateResult{
@@ -73,78 +117,55 @@ func StartServer() error {
 		}
 	}()
 
-	wg.Wait()
+	for i := 0; i < 4; i++ {
+		select {
+		case artistResult := <-artistChannel:
+			artists = artistResult.Artists
+			artistsErr = artistResult.Err
 
-	// Artists Error
-	artistResult := <-artistChannel
+		case RelationResult := <-relationChannel:
+			relations = RelationResult.Relations
+			relationsErr = RelationResult.Err
 
-	artists = artistResult.Artists
-	artistsErr = artistResult.Err
+		case LocationResult := <-locationChannel:
+			locations = LocationResult.Locations
+			locationsErr = LocationResult.Err
+
+		case DateResult := <-dateChannel:
+			dates = DateResult.Dates
+			datesErr = DateResult.Err
+
+		}
+	}
 
 	if artistsErr != nil {
 		return fmt.Errorf("could not fetch artists: %w", artistsErr)
 	}
-
 	if len(artists) == 0 {
 		return fmt.Errorf("no artists received")
 	}
-
-	// Relation Error
-	RelationResult := <-relationChannel
-
-	relations = RelationResult.Relations
-	relationsErr = RelationResult.Err
-
 	if relationsErr != nil {
 		return fmt.Errorf("could not fetch relations: %w", relationsErr)
 	}
-
 	if len(relations) == 0 {
 		return fmt.Errorf("no relations received")
 	}
-
-	// Location Error
-	LocationResult := <-locationChannel
-
-	locations = LocationResult.Locations
-	locationsErr = LocationResult.Err
-
 	if locationsErr != nil {
 		return fmt.Errorf("could not fetch locations: %w", locationsErr)
 	}
-
 	if len(locations) == 0 {
 		return fmt.Errorf("no locations received")
 	}
-
-	// Date Error
-	DateResult := <-dateChannel
-
-	dates = DateResult.Dates
-	datesErr = DateResult.Err
-
 	if datesErr != nil {
 		return fmt.Errorf("could not fetch dates: %w", datesErr)
 	}
-
 	if len(dates) == 0 {
 		return fmt.Errorf("no dates received")
 	}
-
-	mux := SetupRoutes(artists, relations, locations, dates)
-
-	// Port
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	fmt.Println("Server running at http://localhost:" + port)
-
-	return http.ListenAndServe(":"+port, mux)
+	return nil
 }
 
-func SetupRoutes(artists []Artist, relations []Relation, locations []Location, dates []Date) *http.ServeMux {
+func SetupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", Handler(artists, locations))

@@ -9,8 +9,18 @@ import (
 	"testing"
 )
 
-func testData() ([]Artist, []Relation, []Location, []Date) {
-	artists := []Artist{
+// setTestData populates the package-level artists/relations/locations/dates
+// vars that SetupRoutes reads from, and restores their previous values
+// after the test finishes.
+func setTestData(t *testing.T) {
+	t.Helper()
+
+	originalArtists := artists
+	originalRelations := relations
+	originalLocations := locations
+	originalDates := dates
+
+	artists = []Artist{
 		{
 			ID:           1,
 			Name:         "Test Band",
@@ -27,12 +37,12 @@ func testData() ([]Artist, []Relation, []Location, []Date) {
 		},
 	}
 
-	relations := []Relation{
+	relations = []Relation{
 		{ID: 1},
 		{ID: 2},
 	}
 
-	locations := []Location{
+	locations = []Location{
 		{
 			ID:        1,
 			Locations: []string{"athens-greece"},
@@ -43,12 +53,17 @@ func testData() ([]Artist, []Relation, []Location, []Date) {
 		},
 	}
 
-	dates := []Date{
+	dates = []Date{
 		{ID: 1},
 		{ID: 2},
 	}
 
-	return artists, relations, locations, dates
+	t.Cleanup(func() {
+		artists = originalArtists
+		relations = originalRelations
+		locations = originalLocations
+		dates = originalDates
+	})
 }
 
 // Tests run from the internal folder.
@@ -76,9 +91,9 @@ func moveToProjectRoot(t *testing.T) {
 }
 
 func TestSetupRoutes(t *testing.T) {
-	artists, relations, locations, dates := testData()
+	setTestData(t)
 
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	if mux == nil {
 		t.Fatal("SetupRoutes returned nil")
@@ -87,9 +102,9 @@ func TestSetupRoutes(t *testing.T) {
 
 func TestHomeRoute(t *testing.T) {
 	moveToProjectRoot(t)
+	setTestData(t)
 
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
@@ -111,9 +126,9 @@ func TestHomeRoute(t *testing.T) {
 
 func TestInvalidRoute(t *testing.T) {
 	moveToProjectRoot(t)
+	setTestData(t)
 
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -135,9 +150,9 @@ func TestInvalidRoute(t *testing.T) {
 
 func TestHomeRejectsPost(t *testing.T) {
 	moveToProjectRoot(t)
+	setTestData(t)
 
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(http.MethodPost, "/", nil)
 	response := httptest.NewRecorder()
@@ -154,8 +169,9 @@ func TestHomeRejectsPost(t *testing.T) {
 }
 
 func TestSuggestionsRoute(t *testing.T) {
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	setTestData(t)
+
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -195,9 +211,9 @@ func TestSuggestionsRoute(t *testing.T) {
 
 func TestFilterByCreationYear(t *testing.T) {
 	moveToProjectRoot(t)
+	setTestData(t)
 
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -229,9 +245,9 @@ func TestFilterByCreationYear(t *testing.T) {
 
 func TestFilterByMembers(t *testing.T) {
 	moveToProjectRoot(t)
+	setTestData(t)
 
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -263,9 +279,9 @@ func TestFilterByMembers(t *testing.T) {
 
 func TestFilterByLocation(t *testing.T) {
 	moveToProjectRoot(t)
+	setTestData(t)
 
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,
@@ -297,9 +313,9 @@ func TestFilterByLocation(t *testing.T) {
 
 func TestStaticRoute(t *testing.T) {
 	moveToProjectRoot(t)
+	setTestData(t)
 
-	artists, relations, locations, dates := testData()
-	mux := SetupRoutes(artists, relations, locations, dates)
+	mux := SetupRoutes()
 
 	request := httptest.NewRequest(
 		http.MethodGet,

@@ -23,7 +23,7 @@ The application uses the API's four data sections:
 - **Dates** — concert dates for each artist.
 - **Relations** — connects concert locations with their matching dates.
 
-The four API sections are fetched concurrently using **Go goroutines and `sync.WaitGroup`**, allowing the independent API requests to run at the same time before the server starts.
+The four API sections are fetched concurrently using **Go goroutines**, allowing the independent API requests to run at the same time before the server starts.
 
 The website includes artist cards, search, live suggestions, pagination, a Quick View side panel, detailed artist pages, concert information, an interactive map, dark mode and custom error pages.
 
@@ -35,6 +35,11 @@ Run the project from the root directory:
 
 ```bash
 go run ./cmd
+```
+
+or
+```bash
+make run
 ```
 
 The server starts at:
@@ -69,7 +74,6 @@ PORT=3000 go run ./cmd
 - Custom `400`, `404`, `405` and `500` error handling.
 - Automated tests for models, handlers, routes and server behavior.
 - Concurrent API fetching using **Go goroutines**.
-- API request synchronization using **`sync.WaitGroup`**.
 - Automatic background data refresh from the API every 10 minutes.
 
 ---

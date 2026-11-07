@@ -7,7 +7,7 @@ import (
 )
 
 func FetchArtists() ([]Artist, error) {
-	apidata, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
+	apidata, err := http.Get("https://groupietrackers.01edu.ai/api/artists")
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func FetchArtists() ([]Artist, error) {
 }
 
 func FetchRelations() ([]Relation, error) {
-	apidata, err := http.Get("https://groupietrackers.herokuapp.com/api/relation")
+	apidata, err := http.Get("https://groupietrackers.01edu.ai/api/relation")
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func FetchRelations() ([]Relation, error) {
 }
 
 func FetchLocations() ([]Location, error) {
-	apidata, err := http.Get("https://groupietrackers.herokuapp.com/api/locations")
+	apidata, err := http.Get("https://groupietrackers.01edu.ai/api/locations")
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func FetchLocations() ([]Location, error) {
 }
 
 func FetchDates() ([]Date, error) {
-	apidata, err := http.Get("https://groupietrackers.herokuapp.com/api/dates")
+	apidata, err := http.Get("https://groupietrackers.01edu.ai/api/dates")
 	if err != nil {
 		return nil, err
 	}
